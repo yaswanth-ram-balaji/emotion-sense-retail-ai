@@ -35,15 +35,51 @@ const Index = () => {
   const [privacyOptOut, setPrivacyOptOut] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
+  const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Check backend connectivity
+  const checkBackendConnection = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/docs', {
+        method: 'GET',
+        mode: 'cors'
+      });
+      if (response.ok) {
+        setBackendStatus('connected');
+        console.log('Backend connected successfully');
+        return true;
+      }
+    } catch (error) {
+      console.error('Backend connection failed:', error);
+    }
+    
+    // Try alternative localhost address
+    try {
+      const response = await fetch('http://127.0.0.1:8000/docs', {
+        method: 'GET',
+        mode: 'cors'
+      });
+      if (response.ok) {
+        setBackendStatus('connected');
+        console.log('Backend connected via 127.0.0.1');
+        return true;
+      }
+    } catch (error) {
+      console.error('Backend connection failed on 127.0.0.1:', error);
+    }
+    
+    setBackendStatus('disconnected');
+    return false;
+  };
+
   // Auto-capture functionality
   useEffect(() => {
-    if (autoCapture && !privacyOptOut) {
+    if (autoCapture && !privacyOptOut && backendStatus === 'connected') {
       intervalRef.current = setInterval(() => {
         detectCurrentEmotion();
-      }, 3000); // Capture every 3 seconds
+      }, 3000);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -56,23 +92,38 @@ const Index = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [autoCapture, privacyOptOut]);
+  }, [autoCapture, privacyOptOut, backendStatus]);
 
-  // Load emotion history on component mount
+  // Check backend on mount
   useEffect(() => {
+    checkBackendConnection();
     loadEmotionHistory();
   }, []);
 
+  const getBackendUrl = () => {
+    return backendStatus === 'connected' ? 'http://localhost:8000' : 'http://127.0.0.1:8000';
+  };
+
   const loadEmotionHistory = async () => {
+    if (backendStatus === 'disconnected') return;
+    
     try {
-      const response = await fetch('http://localhost:8000/emotion-log');
+      const response = await fetch(`${getBackendUrl()}/emotion-log`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
         setEmotionHistory(data);
         console.log('Loaded emotion history:', data);
       }
     } catch (error) {
-      console.log('Backend not available for emotion history');
+      console.log('Could not load emotion history:', error);
     }
   };
 
@@ -92,26 +143,29 @@ const Index = () => {
   };
 
   const detectCurrentEmotion = async () => {
-    if (privacyOptOut || isAnalyzing) return;
+    if (privacyOptOut || isAnalyzing || backendStatus !== 'connected') return;
 
     setIsAnalyzing(true);
     
     try {
       console.log('Starting emotion detection...');
       
-      // Capture image from camera
       const imageBase64 = await captureImage();
       console.log('Image captured, sending to backend...');
       
-      // Step 1: Detect face
-      const faceResponse = await fetch('http://localhost:8000/detect-face', {
+      // Step 1: Detect face with proper headers
+      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ image_base64: imageBase64 })
       });
 
       if (!faceResponse.ok) {
-        throw new Error(`Face detection failed: ${faceResponse.status}`);
+        throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
       }
       
       const faceData = await faceResponse.json();
@@ -122,14 +176,18 @@ const Index = () => {
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch('http://localhost:8000/analyze-emotion', {
+      const emotionResponse = await fetch(`${getBackendUrl()}/analyze-emotion`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
       });
 
       if (!emotionResponse.ok) {
-        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
       }
       
       const emotionData = await emotionResponse.json();
@@ -146,7 +204,16 @@ const Index = () => {
     } catch (error) {
       console.error('Error in emotion detection:', error);
       
-      if (!autoCapture) {
+      // Check if backend is still connected
+      const isConnected = await checkBackendConnection();
+      if (!isConnected) {
+        toast({
+          title: "Backend Disconnected",
+          description: "Please ensure the FastAPI server is running on localhost:8000",
+          variant: "destructive"
+        });
+        setAutoCapture(false);
+      } else if (!autoCapture) {
         toast({
           title: "Detection Failed",
           description: error instanceof Error ? error.message : "Could not detect emotion",
@@ -168,18 +235,30 @@ const Index = () => {
       return;
     }
 
+    if (backendStatus !== 'connected') {
+      toast({
+        title: "Backend Not Connected",
+        description: "Please start the FastAPI server and ensure it's running on localhost:8000",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
     try {
       console.log(`Starting ${type} emotion analysis...`);
       
-      // Capture image from camera
       const imageBase64 = await captureImage();
       
       // Step 1: Detect face
-      const faceResponse = await fetch('http://localhost:8000/detect-face', {
+      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ image_base64: imageBase64 })
       });
 
@@ -194,9 +273,13 @@ const Index = () => {
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch('http://localhost:8000/analyze-emotion', {
+      const emotionResponse = await fetch(`${getBackendUrl()}/analyze-emotion`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
       });
 
@@ -262,17 +345,25 @@ const Index = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/compare-emotion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entry: entryEmotion, exit: exitEmotion })
-      });
+      if (backendStatus === 'connected') {
+        const response = await fetch(`${getBackendUrl()}/compare-emotion`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ entry: entryEmotion, exit: exitEmotion })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setSatisfactionResult(data);
+        if (response.ok) {
+          const data = await response.json();
+          setSatisfactionResult(data);
+        } else {
+          throw new Error('Backend comparison failed');
+        }
       } else {
-        // Fallback logic for satisfaction comparison
+        // Fallback logic
         const positiveEmotions = ['happy', 'surprise', 'neutral'];
         const negativeEmotions = ['angry', 'sad', 'disgust', 'fear'];
         
@@ -315,6 +406,24 @@ const Index = () => {
     });
   };
 
+  const retryBackendConnection = async () => {
+    setBackendStatus('checking');
+    const connected = await checkBackendConnection();
+    if (connected) {
+      toast({
+        title: "Backend Connected",
+        description: "Successfully connected to emotion detection server"
+      });
+      loadEmotionHistory();
+    } else {
+      toast({
+        title: "Connection Failed",
+        description: "Make sure FastAPI server is running on localhost:8000",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Privacy Banner */}
@@ -325,6 +434,9 @@ const Index = () => {
             <span className="text-blue-100 text-sm">
               Real-Time AI Emotion Detection for Customer Experience Enhancement
             </span>
+            <Badge variant={backendStatus === 'connected' ? 'default' : 'destructive'}>
+              Backend: {backendStatus}
+            </Badge>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-blue-100 text-sm">Opt out of Emotion Detection</span>
@@ -336,6 +448,28 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Backend Connection Alert */}
+      {backendStatus === 'disconnected' && (
+        <div className="bg-red-600/20 backdrop-blur-sm border-b border-red-500/20 p-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <span className="text-red-100 text-sm">
+                Backend server not connected. Start FastAPI server with: <code>uvicorn main:app --reload --host 0.0.0.0 --port 8000</code>
+              </span>
+            </div>
+            <Button 
+              onClick={retryBackendConnection}
+              variant="outline" 
+              size="sm"
+              className="border-red-500 text-red-400 hover:bg-red-500/10"
+            >
+              Retry Connection
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
@@ -360,6 +494,9 @@ const Index = () => {
                 <CardTitle className="flex items-center gap-2 text-slate-100">
                   <Camera className="h-5 w-5" />
                   Live AI Emotion Detection
+                  {backendStatus !== 'connected' && (
+                    <Badge variant="destructive">Offline</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -378,7 +515,7 @@ const Index = () => {
                     <Switch
                       checked={autoCapture}
                       onCheckedChange={setAutoCapture}
-                      disabled={privacyOptOut}
+                      disabled={privacyOptOut || backendStatus !== 'connected'}
                       className="data-[state=checked]:bg-green-500"
                     />
                   </div>
@@ -387,14 +524,14 @@ const Index = () => {
                   <div className="flex flex-wrap gap-3">
                     <Button
                       onClick={() => analyzeEmotion('entry')}
-                      disabled={isAnalyzing || privacyOptOut}
+                      disabled={isAnalyzing || privacyOptOut || backendStatus !== 'connected'}
                       className="bg-green-600 hover:bg-green-700"
                     >
                       {isAnalyzing ? 'Analyzing...' : 'Capture Entry Emotion'}
                     </Button>
                     <Button
                       onClick={() => analyzeEmotion('exit')}
-                      disabled={isAnalyzing || privacyOptOut}
+                      disabled={isAnalyzing || privacyOptOut || backendStatus !== 'connected'}
                       className="bg-red-600 hover:bg-red-700"
                     >
                       {isAnalyzing ? 'Analyzing...' : 'Capture Exit Emotion'}
@@ -458,9 +595,9 @@ const Index = () => {
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-300">Privacy Mode</span>
-                    <Badge variant={privacyOptOut ? "destructive" : "default"}>
-                      {privacyOptOut ? "Disabled" : "Active"}
+                    <span className="text-slate-300">Backend Status</span>
+                    <Badge variant={backendStatus === 'connected' ? "default" : "destructive"}>
+                      {backendStatus}
                     </Badge>
                   </div>
                 </CardContent>
