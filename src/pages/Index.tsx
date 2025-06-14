@@ -108,8 +108,6 @@ const Index = () => {
   };
 
   const loadEmotionHistory = async () => {
-    if (backendStatus === 'disconnected') return;
-    
     try {
       if (backendStatus === 'mock') {
         const data = await mockBackend.getEmotionLog();
@@ -118,19 +116,21 @@ const Index = () => {
         return;
       }
 
-      const response = await fetch(`${getBackendUrl()}/emotion-log`, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+      if (backendStatus === 'connected') {
+        const response = await fetch(`${getBackendUrl()}/emotion-log`, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setEmotionHistory(data);
+          console.log('Loaded emotion history:', data);
         }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEmotionHistory(data);
-        console.log('Loaded emotion history:', data);
       }
     } catch (error) {
       console.log('Could not load emotion history:', error);
