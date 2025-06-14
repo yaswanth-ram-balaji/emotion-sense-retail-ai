@@ -228,7 +228,7 @@ const Index = () => {
       
       // Check if backend is still connected
       const isConnected = await checkBackendConnection();
-      if (!isConnected && backendStatus === 'disconnected') {
+      if (!isConnected && backendStatus !== 'mock') {
         toast({
           title: "Backend Disconnected",
           description: "Using mock backend for demo purposes",
