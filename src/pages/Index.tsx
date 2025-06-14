@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Activity, AlertTriangle, Shield, BarChart3, Users, TrendingUp, Clock } from 'lucide-react';
+import { Camera, Activity, AlertTriangle, Shield, BarChart3, Users, TrendingUp, Clock, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +33,30 @@ const Index = () => {
   const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [privacyOptOut, setPrivacyOptOut] = useState<boolean>(false);
+  const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-capture functionality
+  useEffect(() => {
+    if (autoCapture && !privacyOptOut) {
+      intervalRef.current = setInterval(() => {
+        detectCurrentEmotion();
+      }, 3000); // Capture every 3 seconds
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [autoCapture, privacyOptOut]);
 
   // Load emotion history on component mount
   useEffect(() => {
@@ -47,9 +69,10 @@ const Index = () => {
       if (response.ok) {
         const data = await response.json();
         setEmotionHistory(data);
+        console.log('Loaded emotion history:', data);
       }
     } catch (error) {
-      console.log('Backend not available - using demo mode');
+      console.log('Backend not available for emotion history');
     }
   };
 
@@ -65,7 +88,74 @@ const Index = () => {
     if (!ctx) throw new Error('Canvas context not available');
     
     ctx.drawImage(video, 0, 0);
-    return canvas.toDataURL('image/jpeg').split(',')[1];
+    return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+  };
+
+  const detectCurrentEmotion = async () => {
+    if (privacyOptOut || isAnalyzing) return;
+
+    setIsAnalyzing(true);
+    
+    try {
+      console.log('Starting emotion detection...');
+      
+      // Capture image from camera
+      const imageBase64 = await captureImage();
+      console.log('Image captured, sending to backend...');
+      
+      // Step 1: Detect face
+      const faceResponse = await fetch('http://localhost:8000/detect-face', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: imageBase64 })
+      });
+
+      if (!faceResponse.ok) {
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
+      }
+      
+      const faceData = await faceResponse.json();
+      console.log('Face detection response:', faceData);
+      
+      if (!faceData.face_crop_base64) {
+        throw new Error('No face detected in image');
+      }
+
+      // Step 2: Analyze emotion
+      const emotionResponse = await fetch('http://localhost:8000/analyze-emotion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
+      });
+
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+      }
+      
+      const emotionData = await emotionResponse.json();
+      console.log('Emotion analysis response:', emotionData);
+      
+      const emotion = emotionData.emotion;
+      const confidence = emotionData.confidence || 0.85;
+
+      setCurrentEmotion(emotion);
+      setEmotionConfidence(confidence);
+
+      console.log(`Detected emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
+
+    } catch (error) {
+      console.error('Error in emotion detection:', error);
+      
+      if (!autoCapture) {
+        toast({
+          title: "Detection Failed",
+          description: error instanceof Error ? error.message : "Could not detect emotion",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const analyzeEmotion = async (type: 'entry' | 'exit') => {
@@ -81,6 +171,8 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
+      console.log(`Starting ${type} emotion analysis...`);
+      
       // Capture image from camera
       const imageBase64 = await captureImage();
       
@@ -91,10 +183,16 @@ const Index = () => {
         body: JSON.stringify({ image_base64: imageBase64 })
       });
 
-      if (!faceResponse.ok) throw new Error('Face detection failed');
+      if (!faceResponse.ok) {
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
+      }
       
       const faceData = await faceResponse.json();
       
+      if (!faceData.face_crop_base64) {
+        throw new Error('No face detected in image');
+      }
+
       // Step 2: Analyze emotion
       const emotionResponse = await fetch('http://localhost:8000/analyze-emotion', {
         method: 'POST',
@@ -102,11 +200,13 @@ const Index = () => {
         body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
       });
 
-      if (!emotionResponse.ok) throw new Error('Emotion analysis failed');
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+      }
       
       const emotionData = await emotionResponse.json();
       const emotion = emotionData.emotion;
-      const confidence = emotionData.confidence || Math.random() * 0.3 + 0.7;
+      const confidence = emotionData.confidence || 0.85;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
@@ -126,44 +226,25 @@ const Index = () => {
       };
       setEmotionHistory(prev => [newEntry, ...prev].slice(0, 50));
 
-      // Track unhappy exits
-      if (type === 'exit' && (emotion === 'Angry' || emotion === 'Sad')) {
+      // Track unhappy exits for alerts
+      if (type === 'exit' && (emotion === 'angry' || emotion === 'sad' || emotion === 'disgust' || emotion === 'fear')) {
         setUnhappyCount(prev => prev + 1);
       }
 
       toast({
-        title: `${type === 'entry' ? 'Entry' : 'Exit'} Emotion Detected`,
+        title: `${type === 'entry' ? 'Entry' : 'Exit'} Emotion Captured`,
         description: `Customer appears ${emotion.toLowerCase()} (${(confidence * 100).toFixed(1)}% confidence)`
       });
+
+      console.log(`${type} emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
 
     } catch (error) {
       console.error('Error analyzing emotion:', error);
       
-      // Demo mode fallback
-      const demoEmotions = ['Happy', 'Neutral', 'Sad', 'Surprised', 'Angry'];
-      const randomEmotion = demoEmotions[Math.floor(Math.random() * demoEmotions.length)];
-      const confidence = Math.random() * 0.3 + 0.7;
-      
-      setCurrentEmotion(randomEmotion);
-      setEmotionConfidence(confidence);
-      
-      if (type === 'entry') {
-        setEntryEmotion(randomEmotion);
-      } else {
-        setExitEmotion(randomEmotion);
-      }
-
-      const newEntry: EmotionData = {
-        timestamp: new Date().toISOString(),
-        emotion: randomEmotion,
-        confidence,
-        type
-      };
-      setEmotionHistory(prev => [newEntry, ...prev].slice(0, 50));
-
       toast({
-        title: "Demo Mode",
-        description: `Simulated ${randomEmotion} emotion (Backend not connected)`
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Could not analyze emotion",
+        variant: "destructive"
       });
     } finally {
       setIsAnalyzing(false);
@@ -191,12 +272,22 @@ const Index = () => {
         const data = await response.json();
         setSatisfactionResult(data);
       } else {
-        // Fallback logic
-        const isHappyExit = exitEmotion === 'Happy' || exitEmotion === 'Surprised';
-        const isAngryExit = exitEmotion === 'Angry' || exitEmotion === 'Sad';
+        // Fallback logic for satisfaction comparison
+        const positiveEmotions = ['happy', 'surprise', 'neutral'];
+        const negativeEmotions = ['angry', 'sad', 'disgust', 'fear'];
+        
+        const isPositiveExit = positiveEmotions.includes(exitEmotion.toLowerCase());
+        const isNegativeExit = negativeEmotions.includes(exitEmotion.toLowerCase());
+        
+        let satisfaction = 'Neutral';
+        if (isPositiveExit) {
+          satisfaction = 'Satisfied';
+        } else if (isNegativeExit) {
+          satisfaction = 'Unhappy Exit';
+        }
         
         setSatisfactionResult({
-          satisfaction: isHappyExit ? 'Satisfied' : isAngryExit ? 'Unhappy Exit' : 'Neutral',
+          satisfaction,
           delta: entryEmotion === exitEmotion ? 'No Change' : `${entryEmotion} → ${exitEmotion}`
         });
       }
@@ -217,6 +308,7 @@ const Index = () => {
     setEntryEmotion('');
     setExitEmotion('');
     setSatisfactionResult(null);
+    setAutoCapture(false);
     toast({
       title: "Session Reset",
       description: "Ready for new customer analysis"
@@ -231,7 +323,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Shield className="h-5 w-5 text-blue-400" />
             <span className="text-blue-100 text-sm">
-              AI Emotion Detection for Customer Experience Enhancement
+              Real-Time AI Emotion Detection for Customer Experience Enhancement
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -252,7 +344,7 @@ const Index = () => {
             Retail EmotionSense
           </h1>
           <p className="text-slate-300 text-lg">
-            Real-Time Emotion Tracking for Enhanced Customer Experience
+            Real-Time AI Emotion Tracking for Enhanced Customer Experience
           </p>
         </div>
 
@@ -267,42 +359,62 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-100">
                   <Camera className="h-5 w-5" />
-                  Live Camera Feed
+                  Live AI Emotion Detection
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <CameraFeed ref={videoRef} />
                 
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Button
-                    onClick={() => analyzeEmotion('entry')}
-                    disabled={isAnalyzing || privacyOptOut}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Capture Entry Emotion'}
-                  </Button>
-                  <Button
-                    onClick={() => analyzeEmotion('exit')}
-                    disabled={isAnalyzing || privacyOptOut}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Capture Exit Emotion'}
-                  </Button>
-                  <Button
-                    onClick={compareSatisfaction}
-                    disabled={!entryEmotion || !exitEmotion}
-                    variant="outline"
-                    className="border-purple-500 text-purple-400 hover:bg-purple-500/10"
-                  >
-                    Compare Satisfaction
-                  </Button>
-                  <Button
-                    onClick={resetSession}
-                    variant="outline"
-                    className="border-slate-500 text-slate-400 hover:bg-slate-500/10"
-                  >
-                    Reset Session
-                  </Button>
+                <div className="mt-4 space-y-4">
+                  {/* Auto Capture Control */}
+                  <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {autoCapture ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-slate-400" />}
+                      <span className="text-slate-200">Auto AI Detection</span>
+                      <Badge variant={autoCapture ? "default" : "secondary"}>
+                        {autoCapture ? "Active" : "Paused"}
+                      </Badge>
+                    </div>
+                    <Switch
+                      checked={autoCapture}
+                      onCheckedChange={setAutoCapture}
+                      disabled={privacyOptOut}
+                      className="data-[state=checked]:bg-green-500"
+                    />
+                  </div>
+
+                  {/* Manual Capture Buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      onClick={() => analyzeEmotion('entry')}
+                      disabled={isAnalyzing || privacyOptOut}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isAnalyzing ? 'Analyzing...' : 'Capture Entry Emotion'}
+                    </Button>
+                    <Button
+                      onClick={() => analyzeEmotion('exit')}
+                      disabled={isAnalyzing || privacyOptOut}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {isAnalyzing ? 'Analyzing...' : 'Capture Exit Emotion'}
+                    </Button>
+                    <Button
+                      onClick={compareSatisfaction}
+                      disabled={!entryEmotion || !exitEmotion}
+                      variant="outline"
+                      className="border-purple-500 text-purple-400 hover:bg-purple-500/10"
+                    >
+                      Compare Satisfaction
+                    </Button>
+                    <Button
+                      onClick={resetSession}
+                      variant="outline"
+                      className="border-slate-500 text-slate-400 hover:bg-slate-500/10"
+                    >
+                      Reset Session
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -340,6 +452,12 @@ const Index = () => {
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
+                    <span className="text-slate-300">Auto Detection</span>
+                    <Badge variant={autoCapture ? "default" : "secondary"}>
+                      {autoCapture ? "Running" : "Stopped"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span className="text-slate-300">Privacy Mode</span>
                     <Badge variant={privacyOptOut ? "destructive" : "default"}>
                       {privacyOptOut ? "Disabled" : "Active"}
@@ -366,7 +484,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-100">
                   <Clock className="h-5 w-5" />
-                  Recent Activity
+                  Real-Time Activity
                 </CardTitle>
               </CardHeader>
               <CardContent>

@@ -17,36 +17,54 @@ interface EmotionDisplayProps {
 }
 
 const getEmotionEmoji = (emotion: string): string => {
+  const normalizedEmotion = emotion.toLowerCase();
   const emojiMap: { [key: string]: string } = {
-    'Happy': '😊',
-    'Sad': '😢',
-    'Angry': '😠',
-    'Surprised': '😲',
-    'Fear': '😨',
-    'Disgust': '🤢',
-    'Neutral': '😐',
-    'Contempt': '😤'
+    'happy': '😊',
+    'happiness': '😊',
+    'joy': '😊',
+    'sad': '😢',
+    'sadness': '😢',
+    'angry': '😠',
+    'anger': '😠',
+    'surprised': '😲',
+    'surprise': '😲',
+    'fear': '😨',
+    'fearful': '😨',
+    'disgust': '🤢',
+    'disgusted': '🤢',
+    'neutral': '😐',
+    'contempt': '😤',
+    'contemptuous': '😤'
   };
-  return emojiMap[emotion] || '🤔';
+  return emojiMap[normalizedEmotion] || '🤔';
 };
 
 const getEmotionColor = (emotion: string): string => {
+  const normalizedEmotion = emotion.toLowerCase();
   const colorMap: { [key: string]: string } = {
-    'Happy': 'text-green-400',
-    'Sad': 'text-blue-400',
-    'Angry': 'text-red-400',
-    'Surprised': 'text-yellow-400',
-    'Fear': 'text-purple-400',
-    'Disgust': 'text-orange-400',
-    'Neutral': 'text-gray-400',
-    'Contempt': 'text-pink-400'
+    'happy': 'text-green-400',
+    'happiness': 'text-green-400',
+    'joy': 'text-green-400',
+    'sad': 'text-blue-400',
+    'sadness': 'text-blue-400',
+    'angry': 'text-red-400',
+    'anger': 'text-red-400',
+    'surprised': 'text-yellow-400',
+    'surprise': 'text-yellow-400',
+    'fear': 'text-purple-400',
+    'fearful': 'text-purple-400',
+    'disgust': 'text-orange-400',
+    'disgusted': 'text-orange-400',
+    'neutral': 'text-gray-400',
+    'contempt': 'text-pink-400',
+    'contemptuous': 'text-pink-400'
   };
-  return colorMap[emotion] || 'text-gray-400';
+  return colorMap[normalizedEmotion] || 'text-gray-400';
 };
 
 const getSatisfactionColor = (satisfaction: string): string => {
-  if (satisfaction.includes('Satisfied')) return 'text-green-400';
-  if (satisfaction.includes('Unhappy')) return 'text-red-400';
+  if (satisfaction.toLowerCase().includes('satisfied')) return 'text-green-400';
+  if (satisfaction.toLowerCase().includes('unhappy')) return 'text-red-400';
   return 'text-yellow-400';
 };
 
@@ -64,7 +82,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-slate-100">
             <Activity className="h-5 w-5" />
-            Current Detection
+            Live AI Detection
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
@@ -73,7 +91,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
               <div className="text-6xl mb-2">
                 {getEmotionEmoji(emotion)}
               </div>
-              <div className={`text-2xl font-bold ${getEmotionColor(emotion)}`}>
+              <div className={`text-2xl font-bold capitalize ${getEmotionColor(emotion)}`}>
                 {emotion}
               </div>
               <div className="space-y-2">
@@ -91,7 +109,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
             <div className="py-8 text-slate-400">
               <div className="text-4xl mb-2">🎯</div>
               <p>No emotion detected</p>
-              <p className="text-sm">Capture an emotion to begin</p>
+              <p className="text-sm">Enable auto-detection or capture manually</p>
             </div>
           )}
         </CardContent>
@@ -109,7 +127,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
               {entryEmotion ? (
                 <>
                   <div className="text-2xl">{getEmotionEmoji(entryEmotion)}</div>
-                  <div className={`text-sm font-medium ${getEmotionColor(entryEmotion)}`}>
+                  <div className={`text-sm font-medium capitalize ${getEmotionColor(entryEmotion)}`}>
                     {entryEmotion}
                   </div>
                 </>
@@ -127,7 +145,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
               {exitEmotion ? (
                 <>
                   <div className="text-2xl">{getEmotionEmoji(exitEmotion)}</div>
-                  <div className={`text-sm font-medium ${getEmotionColor(exitEmotion)}`}>
+                  <div className={`text-sm font-medium capitalize ${getEmotionColor(exitEmotion)}`}>
                     {exitEmotion}
                   </div>
                 </>
@@ -141,7 +159,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
             <div className="pt-4 border-t border-slate-600">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  {satisfactionResult.satisfaction.includes('Satisfied') ? (
+                  {satisfactionResult.satisfaction.toLowerCase().includes('satisfied') ? (
                     <TrendingUp className="h-4 w-4 text-green-400" />
                   ) : (
                     <TrendingDown className="h-4 w-4 text-red-400" />

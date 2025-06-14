@@ -15,17 +15,26 @@ interface EmotionLogProps {
 }
 
 const getEmotionEmoji = (emotion: string): string => {
+  const normalizedEmotion = emotion.toLowerCase();
   const emojiMap: { [key: string]: string } = {
-    'Happy': '😊',
-    'Sad': '😢',
-    'Angry': '😠',
-    'Surprised': '😲',
-    'Fear': '😨',
-    'Disgust': '🤢',
-    'Neutral': '😐',
-    'Contempt': '😤'
+    'happy': '😊',
+    'happiness': '😊',
+    'joy': '😊',
+    'sad': '😢',
+    'sadness': '😢',
+    'angry': '😠',
+    'anger': '😠',
+    'surprised': '😲',
+    'surprise': '😲',
+    'fear': '😨',
+    'fearful': '😨',
+    'disgust': '🤢',
+    'disgusted': '🤢',
+    'neutral': '😐',
+    'contempt': '😤',
+    'contemptuous': '😤'
   };
-  return emojiMap[emotion] || '🤔';
+  return emojiMap[normalizedEmotion] || '🤔';
 };
 
 const formatTime = (timestamp: string): string => {
@@ -44,6 +53,7 @@ const EmotionLog: React.FC<EmotionLogProps> = ({ data }) => {
       <div className="text-center py-8 text-slate-400 text-sm">
         <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
         <p>No activity recorded</p>
+        <p className="text-xs mt-1">Enable auto-detection to see live emotions</p>
       </div>
     );
   }
@@ -61,7 +71,7 @@ const EmotionLog: React.FC<EmotionLogProps> = ({ data }) => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-slate-200 font-medium text-sm">
+                <span className="text-slate-200 font-medium text-sm capitalize">
                   {entry.emotion}
                 </span>
                 {entry.type === 'entry' ? (

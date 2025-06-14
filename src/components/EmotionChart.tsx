@@ -14,25 +14,34 @@ interface EmotionChartProps {
 }
 
 const EMOTION_COLORS = {
-  'Happy': '#22c55e',
-  'Sad': '#3b82f6',
-  'Angry': '#ef4444',
-  'Surprised': '#eab308',
-  'Fear': '#8b5cf6',
-  'Disgust': '#f97316',
-  'Neutral': '#6b7280',
-  'Contempt': '#ec4899'
+  'happy': '#22c55e',
+  'happiness': '#22c55e',
+  'joy': '#22c55e',
+  'sad': '#3b82f6',
+  'sadness': '#3b82f6',
+  'angry': '#ef4444',
+  'anger': '#ef4444',
+  'surprised': '#eab308',
+  'surprise': '#eab308',
+  'fear': '#8b5cf6',
+  'fearful': '#8b5cf6',
+  'disgust': '#f97316',
+  'disgusted': '#f97316',
+  'neutral': '#6b7280',
+  'contempt': '#ec4899',
+  'contemptuous': '#ec4899'
 };
 
 const EmotionChart: React.FC<EmotionChartProps> = ({ data }) => {
   // Process data for bar chart (emotion frequency)
   const emotionCounts = data.reduce((acc, item) => {
-    acc[item.emotion] = (acc[item.emotion] || 0) + 1;
+    const normalizedEmotion = item.emotion.toLowerCase();
+    acc[normalizedEmotion] = (acc[normalizedEmotion] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const barChartData = Object.entries(emotionCounts).map(([emotion, count]) => ({
-    emotion,
+    emotion: emotion.charAt(0).toUpperCase() + emotion.slice(1),
     count,
     color: EMOTION_COLORS[emotion as keyof typeof EMOTION_COLORS] || '#6b7280'
   }));
@@ -47,7 +56,11 @@ const EmotionChart: React.FC<EmotionChartProps> = ({ data }) => {
   if (data.length === 0) {
     return (
       <div className="h-48 flex items-center justify-center text-slate-400 text-sm">
-        No emotion data available
+        <div className="text-center">
+          <div className="text-2xl mb-2">📊</div>
+          <p>No emotion data available</p>
+          <p className="text-xs mt-1">Start capturing emotions to see trends</p>
+        </div>
       </div>
     );
   }
