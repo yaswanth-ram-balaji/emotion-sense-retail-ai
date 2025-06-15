@@ -40,6 +40,8 @@ export function useEmotionSense() {
 
   function extractAgeGender(obj: any): { age: number | null, gender: string | null } {
     if (!obj || typeof obj !== "object") return { age: null, gender: null };
+
+    // Check root level
     let age: number | null = null;
     let gender: string | null = null;
 
@@ -53,6 +55,12 @@ export function useEmotionSense() {
     else if (typeof obj.gender_guess === "string" && obj.gender_guess.trim() !== "") gender = obj.gender_guess[0].toUpperCase() + obj.gender_guess.slice(1);
     else if (typeof obj.genderGuess === "string" && obj.genderGuess.trim() !== "") gender = obj.genderGuess[0].toUpperCase() + obj.genderGuess.slice(1);
 
+    // If found at root, return immediately
+    if (age !== null || gender !== null) {
+      return { age, gender };
+    }
+
+    // Otherwise, search recursively
     for (const key of Object.keys(obj)) {
       if (typeof obj[key] === "object") {
         const nested = extractAgeGender(obj[key]);
@@ -209,6 +217,8 @@ export function useEmotionSense() {
 
       // robustly extract demographics
       const { age, gender } = extractAgeGender(emotionData);
+      console.log("[DEBUG] Backend response for demographic:", emotionData);
+      console.log("[DEBUG] Output from extractAgeGender:", { age, gender });
       setAgeGuess(age);
       setGenderGuess(gender);
 
