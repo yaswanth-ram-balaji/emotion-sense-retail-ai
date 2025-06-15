@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
-import { Camera, Fullscreen, Upload } from 'lucide-react';
+import { Camera, Fullscreen, Upload, SwitchCamera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface CameraFeedProps {
@@ -10,11 +11,27 @@ interface CameraFeedProps {
   fullscreen?: boolean;
   onToggleFullscreen?: () => void;
   photoUrl?: string | null;
-  faceBlur?: boolean; // add prop
+  faceBlur?: boolean;
+  // New for camera flip
+  onFlipCamera?: () => void;
+  canFlip?: boolean;
+  flipLabel?: string;
 }
 
 const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
-  ({ className, selectedDeviceId, onPhotoUpload, showUpload, fullscreen, onToggleFullscreen, photoUrl, faceBlur }, ref) => {
+  ({
+    className,
+    selectedDeviceId,
+    onPhotoUpload,
+    showUpload,
+    fullscreen,
+    onToggleFullscreen,
+    photoUrl,
+    faceBlur,
+    onFlipCamera,
+    canFlip,
+    flipLabel
+  }, ref) => {
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const videoRef = (ref as React.RefObject<HTMLVideoElement>) || localVideoRef;
     const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
@@ -37,9 +54,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       const startCamera = async () => {
         try {
           if (photoUrl) return;
-          if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-          }
+          if (currentStream) currentStream.getTracks().forEach(track => track.stop());
           const constraints: MediaStreamConstraints = {
             video: {
               width: { ideal: 960 },
@@ -59,7 +74,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       };
 
       startCamera();
-
       return () => {
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
@@ -67,9 +81,8 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       };
     }, [selectedDeviceId, videoRef, photoUrl]);
 
-    // Handle fullscreen via fullscreen API
+    // Fullscreen handling
     const videoContainerRef = useRef<HTMLDivElement>(null);
-
     const handleToggleFullscreen = useCallback(() => {
       if (!videoContainerRef.current) return;
       if (!document.fullscreenElement) {
@@ -80,7 +93,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       if (onToggleFullscreen) onToggleFullscreen();
     }, [onToggleFullscreen]);
 
-    // Handle photo upload
+    // Photo upload
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         const file = e.target.files[0];
@@ -152,7 +165,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <span className="text-white text-xs">LIVE</span>
             </div>
-            {/* Fullscreen & Upload controls (UI only, pointer-events-auto for buttons) */}
+            {/* Fullscreen & Upload & Flip controls */}
             <div className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto z-20">
               <button
                 className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 mb-2 border border-white/10"
@@ -163,6 +176,17 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               >
                 <Fullscreen className="w-5 h-5 text-white" />
               </button>
+              {canFlip && (
+                <button
+                  className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 mb-2 border border-white/10"
+                  aria-label={flipLabel || "Switch Camera"}
+                  type="button"
+                  onClick={onFlipCamera}
+                  title={flipLabel || "Switch Camera"}
+                >
+                  <SwitchCamera className="w-5 h-5 text-white" />
+                </button>
+              )}
               {showUpload && (
                 <label className="inline-block bg-black/50 hover:bg-gray-900/80 rounded-full p-2 cursor-pointer border border-white/10" title="Upload Photo">
                   <Upload className="w-5 h-5 text-white" />
@@ -188,3 +212,4 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
 CameraFeed.displayName = 'CameraFeed';
 
 export default CameraFeed;
+
