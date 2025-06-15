@@ -151,6 +151,14 @@ const SidebarInsightsCard = () => <Card className="bg-slate-800/50 backdrop-blur
     </CardContent>
   </Card>;
 
+// Import the new refactored mini-section components:
+import AnalyticsMetricCard from "@/components/main-content/AnalyticsMetricCard";
+import AnalyticsSatisfactionCard from "@/components/main-content/AnalyticsSatisfactionCard";
+import SidebarRealTimeCard from "@/components/main-content/SidebarRealTimeCard";
+import AnalyticsTrendsCard from "@/components/main-content/AnalyticsTrendsCard";
+import AnalyticsHeatmapCard from "@/components/main-content/AnalyticsHeatmapCard";
+import SidebarInsightsCard from "@/components/main-content/SidebarInsightsCard";
+
 // Mobile order enforced layout
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
@@ -277,8 +285,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 4. Emotion Metrics */}
         <div>
-          <AnalyticsMetricCard
-            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
+          <AnalyticsMetricCard emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
           <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-tight text-orange-400 bg-gradient-to-r from-orange-400 via-red-400 to-fuchsia-500 bg-clip-text text-transparent uppercase animate-pulse">
               <span role="img" aria-label="metrics">📈</span> Emotion Metrics
@@ -288,8 +295,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 5. Customer Satisfaction */}
         <div>
-          <AnalyticsSatisfactionCard
-            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
+          <AnalyticsSatisfactionCard emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
           <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold font-serif tracking-tight bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent animate-fade-in">
               <span role="img" aria-label="smile">😁</span> Satisfaction Score
@@ -299,8 +305,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 6. Real-Time Activity */}
         <div>
-          <SidebarRealTimeCard
-            emotionHistory={emotionHistory} />
+          <SidebarRealTimeCard emotionHistory={emotionHistory} />
           <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-fuchsia-500 bg-clip-text text-transparent animate-scale-in uppercase">
               <span role="img" aria-label="activity">⏰</span> Real-Time Activity
@@ -310,8 +315,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 7. Emotion Trends */}
         <div>
-          <AnalyticsTrendsCard
-            emotionHistory={emotionHistory} autoCapture={autoCapture} />
+          <AnalyticsTrendsCard emotionHistory={emotionHistory} autoCapture={autoCapture} />
           <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-extrabold bg-gradient-to-r from-pink-500 via-orange-400 to-yellow-200 bg-clip-text text-transparent tracking-tight animate-slide-in-right">
               <span role="img" aria-label="waves">🌊</span> Emotional Trends
@@ -321,8 +325,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 8. Emotion Heatmap */}
         <div>
-          <AnalyticsHeatmapCard
-            emotionHistory={emotionHistory} />
+          <AnalyticsHeatmapCard emotionHistory={emotionHistory} />
           <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-orange-400 to-fuchsia-500 bg-clip-text text-transparent animate-fade-in uppercase">
               <span role="img" aria-label="fire">🔥</span> Heatmap
