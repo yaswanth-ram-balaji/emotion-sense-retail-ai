@@ -240,6 +240,7 @@ const Index = () => {
           emotionData.gender_guess ||
           null
       );
+      console.log("Index.tsx detectCurrentEmotion: ageGuess", emotionData.age, "genderGuess", emotionData.gender);
 
       console.log(`Detected emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
       if (emotionScores) {
