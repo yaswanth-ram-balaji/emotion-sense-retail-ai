@@ -23,20 +23,7 @@ class ImageInput(BaseModel):
 
 @app.post("/detect-face")
 async def detect_face(payload: ImageInput):
-    """
-    For demo purposes, just returns the input image as the face crop.
-    Replace this implementation with actual face cropping as needed.
-    """
-    try:
-        imgdata = base64.b64decode(payload.image_base64.split(",")[-1])
-        img = Image.open(BytesIO(imgdata)).convert("RGB")
-        buffered = BytesIO()
-        img.save(buffered, format="JPEG")
-        face_crop_base64 = base64.b64encode(buffered.getvalue()).decode()
-        return {"face_crop_base64": face_crop_base64}
-    except Exception as e:
-        print("detect_face error:", e)
-        raise HTTPException(status_code=400, detail=f"Unable to process image: {e}")
+    # ... keep existing code (detect_face) the same ...
 
 @app.post("/analyze_emotion")
 async def analyze_emotion(payload: ImageInput):
@@ -45,6 +32,7 @@ async def analyze_emotion(payload: ImageInput):
         img = Image.open(BytesIO(imgdata)).convert("RGB")
         np_img = np.array(img)
     except Exception:
+        print("Error decoding or opening the image")
         raise HTTPException(status_code=400, detail="Invalid image")
 
     if payload.method == "fer":
@@ -60,7 +48,11 @@ async def analyze_emotion(payload: ImageInput):
             else:
                 return {"emotion": "neutral", "confidence": 0.0}
         except ImportError:
+            print("FER library not installed")
             raise HTTPException(status_code=500, detail="FER not installed")
+        except Exception as e:
+            print(f"Exception in FER emotion analysis: {e}")
+            return {"emotion": "neutral", "confidence": 0.0}
     elif payload.method == "deepface":
         try:
             from deepface import DeepFace
@@ -69,12 +61,14 @@ async def analyze_emotion(payload: ImageInput):
             score = float(res["emotion"][emotion]) / 100
             return {"emotion": emotion, "confidence": score}
         except ImportError:
+            print("DeepFace library not installed")
             raise HTTPException(status_code=500, detail="DeepFace not installed")
-        except Exception:
+        except Exception as e:
+            print(f"Exception in DeepFace emotion analysis: {e}")
             return {"emotion": "neutral", "confidence": 0.0}
     else:
         raise HTTPException(status_code=400, detail="Invalid method")
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Face Detection and Emotion Analysis API. Use /detect-face to detect faces and /analyze_emotion to analyze emotions from images."}
+    # ... keep existing code (root) the same ...
