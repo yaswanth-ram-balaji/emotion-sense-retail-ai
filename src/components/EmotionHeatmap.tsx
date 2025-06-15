@@ -10,9 +10,11 @@ function aggregateByHour(emotionHistory) {
   const hourMap = {};
   for (let i = 0; i < 24; i++) {
     hourMap[i] = {};
-    emotions.forEach(e => { hourMap[i][e] = 0; });
+    emotions.forEach(e => {
+      hourMap[i][e] = 0;
+    });
   }
-  emotionHistory.forEach((log) => {
+  emotionHistory.forEach(log => {
     const date = new Date(log.timestamp);
     const hour = date.getHours();
     const emotion = log.emotion.toLowerCase();
@@ -23,10 +25,9 @@ function aggregateByHour(emotionHistory) {
   // Prepare recharts data: [{ hour: '00', happy: 0, sad: 3, ... }]
   return Object.entries(hourMap).map(([hour, counts]) => ({
     hour: hour.toString().padStart(2, '0'),
-    ...((counts as Record<string, number>)),
+    ...(counts as Record<string, number>)
   }));
 }
-
 const emotionColors = {
   happy: "#22c55e",
   neutral: "#fbbf24",
@@ -37,52 +38,46 @@ const emotionColors = {
   surprise: "#eab308",
   contempt: "#64748b"
 };
-
-const EmotionHeatmap = ({ emotionHistory }) => {
+const EmotionHeatmap = ({
+  emotionHistory
+}) => {
   const data = useMemo(() => aggregateByHour(emotionHistory), [emotionHistory]);
   const emotions = Object.keys(emotionColors);
 
   // Constrain height for mobile and make horizontally scrollable
-  return (
-    <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+  return <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg md:text-xl">
+        <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg font-bold md:text-xl">
           <BarChart3 className="h-5 w-5" />
           Emotion Heatmap (by Hour)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="w-full overflow-x-auto pb-2" style={{ maxHeight: '300px', minHeight: '100px' }}>
+        <div className="w-full overflow-x-auto pb-2" style={{
+        maxHeight: '300px',
+        minHeight: '100px'
+      }}>
           <table className="w-full border-collapse text-xs min-w-[600px]">
             <thead>
               <tr>
                 <th className="text-left pr-2 py-1">Hour</th>
-                {emotions.map(e => (
-                  <th key={e} className="px-1 py-1 text-center" style={{ color: emotionColors[e] }}>{e.charAt(0).toUpperCase() + e.slice(1)}</th>
-                ))}
+                {emotions.map(e => <th key={e} className="px-1 py-1 text-center" style={{
+                color: emotionColors[e]
+              }}>{e.charAt(0).toUpperCase() + e.slice(1)}</th>)}
               </tr>
             </thead>
             <tbody>
-              {data.map(row => (
-                <tr key={row.hour}>
+              {data.map(row => <tr key={row.hour}>
                   <td className="text-slate-300 pr-2 py-1 font-mono">{row.hour}:00</td>
-                  {emotions.map(e => (
-                    <td
-                      key={e}
-                      className="text-center px-1"
-                      style={{
-                        background: row[e] > 0 ? `${emotionColors[e]}33` : 'transparent',
-                        color: row[e] > 2 ? '#fff' : emotionColors[e],
-                        borderRadius: '4px',
-                        fontWeight: row[e] > 2 ? 'bold' : 'normal'
-                      }}
-                      title={row[e] > 0 ? `${row[e]} detections` : ''}
-                    >
+                  {emotions.map(e => <td key={e} className="text-center px-1" style={{
+                background: row[e] > 0 ? `${emotionColors[e]}33` : 'transparent',
+                color: row[e] > 2 ? '#fff' : emotionColors[e],
+                borderRadius: '4px',
+                fontWeight: row[e] > 2 ? 'bold' : 'normal'
+              }} title={row[e] > 0 ? `${row[e]} detections` : ''}>
                       {row[e] > 0 ? row[e] : ''}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+                    </td>)}
+                </tr>)}
             </tbody>
           </table>
           <div className="pt-2 text-slate-400 text-xs">
@@ -90,8 +85,6 @@ const EmotionHeatmap = ({ emotionHistory }) => {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default EmotionHeatmap;
