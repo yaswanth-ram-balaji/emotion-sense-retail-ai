@@ -1,12 +1,11 @@
 
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart3, Users, TrendingUp } from "lucide-react";
+import { BarChart3, Users, TrendingUp, Files, FileJson } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmotionChart from "@/components/EmotionChart";
 import EmotionHeatmap from "./EmotionHeatmap";
 import { Button } from "@/components/ui/button";
-import { FileCsv, FileJson } from "lucide-react";
 
 interface AnalyticsDashboardProps {
   emotionHistory: any[];
@@ -171,7 +170,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         onClick={() => downloadCSV(emotionHistory, "emotion-history.csv")}
         disabled={!emotionHistory.length}
       >
-        <FileCsv className="mr-2" /> Export CSV
+        <Files className="mr-2" /> Export CSV
       </Button>
       <Button
         variant="secondary"
@@ -187,4 +186,3 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 );
 
 export default AnalyticsDashboard;
-
