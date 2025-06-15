@@ -1,9 +1,9 @@
 
+// Explicitly export backend helpers and session helpers
 export * from "./backendApi";
 export * from "./demographicUtils";
 export * from "./sessionHelpers";
 
-// Explicit named re-exports for backend helpers and others required by useEmotionSenseCore
+// Only re-export needed helpers (for useEmotionSenseCore)
 export { getBackendUrl, checkBackendConnection, loadEmotionHistory } from "./backendApi";
-export { extractDemographicsFromBackend } from "./demographicUtils";
 export { resetSessionState } from "./sessionHelpers";

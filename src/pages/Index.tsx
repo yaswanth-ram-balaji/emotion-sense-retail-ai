@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useEmotionSense } from '@/hooks/useEmotionSense';
 import MainContentLayout from "@/components/MainContentLayout";
@@ -45,8 +44,6 @@ const Index = () => {
           satisfactionResult={emotion.satisfactionResult}
           emotionScores={emotion.currentEmotionScores}
           faceBlur={emotion.faceBlur}
-          ageGuess={emotion.ageGuess}
-          genderGuess={emotion.genderGuess}
           cameraVideoRef={emotion.videoRef}
         />
       </div>
