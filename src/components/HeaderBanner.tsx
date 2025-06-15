@@ -17,21 +17,25 @@ const emotionModels = [
 
 const HeaderBanner: React.FC<HeaderBannerProps> = ({ backendStatus, selectedModel, onModelChange }) => (
   <div className="bg-blue-600/20 backdrop-blur-sm border-b border-blue-500/20 p-4">
-    <div className="max-w-7xl mx-auto flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <Shield className="h-5 w-5 text-blue-400" />
-        <span className="text-blue-100 text-sm">
-          Real-Time AI Emotion Detection for Customer Experience Enhancement
-        </span>
-        <Badge variant={backendStatus === 'connected' ? 'default' : 'destructive'}>
+    <div className="max-w-7xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-blue-400" />
+          <span className="text-blue-100 text-sm">
+            Real-Time AI Emotion Detection for Customer Experience Enhancement
+          </span>
+        </div>
+        <Badge variant={backendStatus === 'connected' ? 'default' : 'destructive'} className="w-fit self-start sm:self-auto">
           Backend: {backendStatus}
         </Badge>
       </div>
-      <div className="flex items-center gap-3">
-        <span className="text-blue-100 text-sm">Model:</span>
+      <div className="flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+        <span className="text-blue-100 text-sm whitespace-nowrap">Model:</span>
         <Select value={selectedModel} onValueChange={onModelChange}>
-          <SelectTrigger className="w-[120px] bg-slate-900 border-blue-400">
-            <SelectValue>{emotionModels.find(m => m.value === selectedModel)?.label}</SelectValue>
+          <SelectTrigger className="w-full sm:w-[120px] bg-slate-900 border-blue-400">
+            <SelectValue>
+              {emotionModels.find(m => m.value === selectedModel)?.label}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {emotionModels.map((m) => (
