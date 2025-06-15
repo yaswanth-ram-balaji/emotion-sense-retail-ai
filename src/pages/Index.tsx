@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useEmotionSense } from '@/hooks/useEmotionSense';
 import MainContentLayout from "@/components/MainContentLayout";
@@ -45,6 +46,8 @@ const Index = () => {
           emotionScores={emotion.currentEmotionScores}
           faceBlur={emotion.faceBlur}
           cameraVideoRef={emotion.videoRef}
+          selectedModel={emotion.selectedModel}
+          onModelChange={emotion.setSelectedModel}
         />
       </div>
     </div>
@@ -52,3 +55,4 @@ const Index = () => {
 };
 
 export default Index;
+
