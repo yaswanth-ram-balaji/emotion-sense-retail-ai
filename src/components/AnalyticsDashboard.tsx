@@ -76,13 +76,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     <EmotionHeatmap emotionHistory={emotionHistory} />
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-100">
+        <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg md:text-xl">
           <BarChart3 className="h-5 w-5" />
           Emotion Trends
           {!autoCapture && (
-            <Badge variant="outline" className="ml-2">
+            <span
+              className="ml-2 inline-flex items-center rounded-full border border-fuchsia-400 bg-fuchsia-900/10 px-3 py-0.5 text-xs font-semibold text-fuchsia-300 shadow transition hover:bg-fuchsia-800/90 hover:text-white focus:outline-none"
+              style={{
+                letterSpacing: "0.03em",
+                boxShadow: "0 1px 6px 0 #be4bfa33"
+              }}
+            >
               Manual Mode
-            </Badge>
+            </span>
           )}
         </CardTitle>
       </CardHeader>

@@ -142,9 +142,15 @@ const AnalyticsTrendsCard = ({ emotionHistory, autoCapture }) => (
       <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
         Emotion Trends
         {!autoCapture && (
-          <Badge variant="outline" className="ml-2">
+          <span
+            className="ml-2 inline-flex items-center rounded-full border border-fuchsia-400 bg-fuchsia-900/10 px-3 py-0.5 text-xs font-semibold text-fuchsia-300 shadow transition hover:bg-fuchsia-800/90 hover:text-white focus:outline-none"
+            style={{
+              letterSpacing: "0.03em",
+              boxShadow: "0 1px 6px 0 #be4bfa33"
+            }}
+          >
             Manual Mode
-          </Badge>
+          </span>
         )}
       </CardTitle>
     </CardHeader>
