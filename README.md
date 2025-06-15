@@ -1,73 +1,58 @@
+
 # Welcome to your Lovable project
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/1a7fad3d-d926-4c1b-92f7-5166e071d8dd
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+This project is a modern web application that uses emotion recognition AI to analyze users' emotional states via camera or uploaded images. It leverages a FastAPI backend for AI-powered inference and Supabase for authentication, real-time database, and profile management.
 
-**Use Lovable**
+## Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1a7fad3d-d926-4c1b-92f7-5166e071d8dd) and start prompting.
+- **React** / **TypeScript** (frontend)
+- **Vite** (build tool)
+- **Supabase** (database, auth, real-time)
+- **Shadcn UI** & **Tailwind CSS** (UI/Styling)
+- **FastAPI** (AI backend, must be run separately)
+- **Recharts** (charts/visualizations)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Running Locally
 
-**Use your preferred IDE**
+1. **Clone this repo and install dependencies:**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   npm install
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. **Start the Vite development server:**
+   ```bash
+   npm run dev
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. **Make sure the FastAPI server is running** on `localhost:8000`.
 
-Follow these steps:
+4. **Configure Supabase** secrets and settings as needed (see `/supabase` folder).
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Deployment & Domains
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- You can deploy the project via the [Lovable Editor](https://lovable.dev/projects/1a7fad3d-d926-4c1b-92f7-5166e071d8dd).
+- Custom domains are supported; see Project > Settings > Domains in the Lovable dashboard.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Security Notes
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- Row Level Security (RLS) is enabled for the `profiles` table in Supabase.
+- For additional best practices, review [Supabase Security Advisor](https://supabase.com/docs/guides/platform/security-advisor).
 
-**Edit a file directly in GitHub**
+## Useful Links
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- [Lovable Docs](https://docs.lovable.dev/)
+- [Supabase Docs](https://supabase.com/docs/)
+- [FastAPI Docs](https://fastapi.tiangolo.com/)
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+*For any improvements or issues, please collaborate via pull requests or reach out on the project chat in Lovable.*
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1a7fad3d-d926-4c1b-92f7-5166e071d8dd) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
