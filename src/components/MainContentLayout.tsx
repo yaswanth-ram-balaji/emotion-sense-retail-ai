@@ -12,6 +12,7 @@ import EmotionHeatmap from "./EmotionHeatmap";
 import EmotionLog from "@/components/EmotionLog";
 import { Clock, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import CurrentEmotion from "./CurrentEmotion"; // Add this import for using CurrentEmotion
 
 interface MainContentLayoutProps {
   useUpload: boolean;
@@ -294,8 +295,14 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           />
         </div>
 
-        {/* 2. Live AI Detection (new card based on user ref image) */}
-        <LiveAIDetectionCard />
+        {/* 2. Live AI Detection (show real time current emotion instead of static card) */}
+        <CurrentEmotion
+          emotion={currentEmotion}
+          confidence={emotionConfidence}
+          emotionScores={emotionScores}
+          getEmotionEmoji={getEmotionEmoji}
+          getEmotionColor={getEmotionColor}
+        />
 
         {/* 3. Customer Journey */}
         <JourneyTracking
