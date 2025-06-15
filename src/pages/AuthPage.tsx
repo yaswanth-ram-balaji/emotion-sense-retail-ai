@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { FcGoogle } from "react-icons/fc"; // Google icon
 
 const AuthPage: React.FC = () => {
   const { user, loading, signUp, signIn } = useAuth();
@@ -21,6 +23,22 @@ const AuthPage: React.FC = () => {
   React.useEffect(() => {
     if (!loading && user) navigate("/");
   }, [loading, user, navigate]);
+
+  // Handler for Google OAuth
+  const handleGoogleSignIn = async () => {
+    setSubmitting(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/",
+      }
+    });
+    if (error) {
+      toast({ title: "Google sign-in failed", description: error.message });
+      setSubmitting(false);
+    }
+    // No need to reset submitting, will redirect away
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +78,20 @@ const AuthPage: React.FC = () => {
               ? "Sign in to continue to your account"
               : "Create an account to get started!"}
           </p>
+        </div>
+        <Button
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="w-full flex items-center justify-center gap-2 bg-white text-slate-700 border border-blue-100 hover:bg-blue-50 dark:bg-blue-900 dark:text-white dark:border-blue-700 mb-1"
+          disabled={submitting}
+        >
+          <FcGoogle className="text-lg" />
+          {isLogin ? "Sign in with Google" : "Sign up with Google"}
+        </Button>
+        <div className="flex items-center my-2">
+          <div className="border-b border-muted-foreground w-full" />
+          <span className="px-2 text-muted-foreground text-xs">or</span>
+          <div className="border-b border-muted-foreground w-full" />
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
