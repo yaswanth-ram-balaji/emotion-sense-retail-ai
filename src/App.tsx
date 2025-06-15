@@ -1,4 +1,3 @@
-
 import AnoAI from "@/components/ui/animated-shader-background";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -14,7 +13,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 
 const App = () => (
   <TooltipProvider>
-    <AnoAI />
+    {/* Removed <AnoAI /> */}
     <Toaster />
     <Sonner />
     <AuthProvider>
