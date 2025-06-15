@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Activity, AlertTriangle, Shield, BarChart3, Users, TrendingUp, Clock, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -162,7 +161,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: imageBase64 })
+        body: JSON.stringify({ image_base64: imageBase64, method: "fer" })
       });
 
       if (!faceResponse.ok) {
@@ -184,7 +183,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64 })
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: "fer" })
       });
 
       if (!emotionResponse.ok) {
@@ -261,7 +260,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: imageBase64 })
+        body: JSON.stringify({ image_base64: imageBase64, method: "fer" })
       });
 
       if (!faceResponse.ok) {
@@ -282,7 +281,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64 })
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: "fer" })
       });
 
       if (!emotionResponse.ok) {
