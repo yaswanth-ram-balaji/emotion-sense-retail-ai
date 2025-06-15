@@ -1,9 +1,11 @@
+
 // useEmotionSenseCore.ts (file refactored for brevity)
 // This file now just orchestrates between modules in useEmotionSense/
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+// FIXED: Correct import from the local index entry point
 import {
   getBackendUrl,
   checkBackendConnection,
