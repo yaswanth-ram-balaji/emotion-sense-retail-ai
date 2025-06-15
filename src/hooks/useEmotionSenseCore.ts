@@ -184,15 +184,32 @@ export function useEmotionSenseCore() {
       const emotionData = await emotionResponse.json();
       console.log('Emotion analysis response (full):', emotionData);
 
-      // robustly extract demographics
-      const { age, gender } = extractAgeGender(emotionData);
-      console.log("[DEBUG] Backend response for demographic:", emotionData);
-      console.log("[DEBUG] Output from extractAgeGender:", { age, gender });
-      setAgeGuess(age);
-      setGenderGuess(gender);
+      // LOG RAW emotionData from backend for debug
+      console.log("[DEBUG] Full backend emotionData (camera):", emotionData);
 
-      // warn if neither found
-      if (age === null && gender === null) {
+      // Check root-level fields first
+      let age = null;
+      let gender = null;
+      if (typeof emotionData.age === "number" || typeof emotionData.age === "string") {
+        age = Number(emotionData.age);
+      }
+      if (typeof emotionData.gender === "string" && emotionData.gender.trim().length > 0) {
+        gender = String(emotionData.gender);
+      }
+
+      if (age === null && (!gender || gender === "null" || gender === "None")) {
+        // Try fallback extractor
+        const demo = extractAgeGender(emotionData);
+        age = demo.age;
+        gender = demo.gender;
+      }
+
+      setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
+      setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
+
+      console.log("[DEBUG] Setting ageGuess:", age, "genderGuess:", gender);
+
+      if ((age === null || Number.isNaN(age)) && (!gender || gender === "null" || gender === "None")) {
         toast({
           title: "No Demographic Data",
           description: "Could not extract age/gender from backend response.",
@@ -480,18 +497,29 @@ export function useEmotionSenseCore() {
       const emotionData = await emotionResponse.json();
       console.log('Photo emotion analysis response (full):', emotionData);
 
-      // robustly extract demographics
-      const { age, gender } = extractAgeGender(emotionData);
-      setAgeGuess(age);
-      setGenderGuess(gender);
+      // LOG RAW emotionData from backend for debug
+      console.log("[DEBUG] Full backend emotionData (photo):", emotionData);
 
-      if (age === null && gender === null) {
-        toast({
-          title: "No Demographic Data",
-          description: "Could not extract age/gender from backend response.",
-          variant: "default"
-        });
+      // Check root-level fields first
+      let age = null;
+      let gender = null;
+      if (typeof emotionData.age === "number" || typeof emotionData.age === "string") {
+        age = Number(emotionData.age);
       }
+      if (typeof emotionData.gender === "string" && emotionData.gender.trim().length > 0) {
+        gender = String(emotionData.gender);
+      }
+
+      if (age === null && (!gender || gender === "null" || gender === "None")) {
+        const demo = extractAgeGender(emotionData);
+        age = demo.age;
+        gender = demo.gender;
+      }
+
+      setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
+      setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
+
+      console.log("[DEBUG] Setting ageGuess:", age, "genderGuess:", gender);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
