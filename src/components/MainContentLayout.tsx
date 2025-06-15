@@ -241,134 +241,137 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   if (isMobile) {
     return (
       <div className="flex flex-col gap-5">
+
         {/* 1. Live AI Emotion Detection */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <CameraPanel
+            useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-transparent bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-400 bg-clip-text font-bold text-2xl tracking-tight drop-shadow-lg animate-fade-in">
               <span role="img" aria-label="camera">📷</span> Live AI Detection
             </span>
           </div>
-          <CameraPanel
-            useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
         </div>
 
         {/* 2. Live AI Detection real-time values */}
         <div className="pt-1">
-          <div className="flex items-center gap-2 mb-1">
+          <CurrentEmotion
+            emotion={currentEmotion} confidence={emotionConfidence} emotionScores={emotionScores} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-extrabold tracking-widest bg-gradient-to-r from-green-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent uppercase animate-scale-in">
               <span role="img" aria-label="bar-chart">📊</span> Real-Time Mood
             </span>
           </div>
-          <CurrentEmotion
-            emotion={currentEmotion} confidence={emotionConfidence} emotionScores={emotionScores} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} />
         </div>
 
         {/* 3. Customer Journey */}
         <div className="pt-1">
-          <div className="flex items-center gap-2 mb-1">
+          <JourneyTracking
+            entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-playfair font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-red-400 bg-clip-text text-transparent drop-shadow-glow animate-slide-in-right tracking-tight">
               <span role="img" aria-label="journey">🗺️</span> Customer Journey Map
             </span>
           </div>
-          <JourneyTracking
-            entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
         </div>
 
         {/* 4. Emotion Metrics */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <AnalyticsMetricCard
+            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-tight text-orange-400 bg-gradient-to-r from-orange-400 via-red-400 to-fuchsia-500 bg-clip-text text-transparent uppercase animate-pulse">
               <span role="img" aria-label="metrics">📈</span> Emotion Metrics
             </span>
           </div>
-          <AnalyticsMetricCard
-            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
         </div>
 
         {/* 5. Customer Satisfaction */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <AnalyticsSatisfactionCard
+            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold font-serif tracking-tight bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent animate-fade-in">
               <span role="img" aria-label="smile">😁</span> Satisfaction Score
             </span>
           </div>
-          <AnalyticsSatisfactionCard
-            emotionHistory={emotionHistory} unhappyCount={unhappyCount} />
         </div>
 
         {/* 6. Real-Time Activity */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <SidebarRealTimeCard
+            emotionHistory={emotionHistory} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-fuchsia-500 bg-clip-text text-transparent animate-scale-in uppercase">
               <span role="img" aria-label="activity">⏰</span> Real-Time Activity
             </span>
           </div>
-          <SidebarRealTimeCard
-            emotionHistory={emotionHistory} />
         </div>
 
         {/* 7. Emotion Trends */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <AnalyticsTrendsCard
+            emotionHistory={emotionHistory} autoCapture={autoCapture} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-extrabold bg-gradient-to-r from-pink-500 via-orange-400 to-yellow-200 bg-clip-text text-transparent tracking-tight animate-slide-in-right">
               <span role="img" aria-label="waves">🌊</span> Emotional Trends
             </span>
           </div>
-          <AnalyticsTrendsCard
-            emotionHistory={emotionHistory} autoCapture={autoCapture} />
         </div>
 
         {/* 8. Emotion Heatmap */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <AnalyticsHeatmapCard
+            emotionHistory={emotionHistory} />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-orange-400 to-fuchsia-500 bg-clip-text text-transparent animate-fade-in uppercase">
               <span role="img" aria-label="fire">🔥</span> Heatmap
             </span>
           </div>
-          <AnalyticsHeatmapCard
-            emotionHistory={emotionHistory} />
         </div>
 
         {/* 9. AI Insights */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <SidebarInsightsCard />
+          <div className="mt-2 flex items-center gap-2 mb-1">
             <span className="text-2xl font-bold font-serif bg-gradient-to-r from-blue-400 via-green-400 to-teal-400 bg-clip-text text-transparent drop-shadow-sm animate-scale-in  uppercase">
               <span role="img" aria-label="ai">🤖</span> AI Insights
             </span>
           </div>
-          <SidebarInsightsCard />
         </div>
       </div>
     );
   }
 
-  // Desktop/tablet normal section headings
+  // Desktop/tablet version
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
 
-        <div>
+        <CameraPanel
+          useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
+        <div className="mt-2 flex items-center gap-2 mb-1">
           <span className="flex items-center gap-2 font-black bg-gradient-to-r from-fuchsia-400 via-cyan-400 to-violet-600 bg-clip-text text-transparent text-3xl drop-shadow-lg animate-scale-in">
             <span role="img" aria-label="camera">📷</span> Live AI Detection
           </span>
         </div>
-        <CameraPanel
-          useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
 
-        <div>
+        <JourneyTracking
+          entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
+        <div className="mt-2 flex items-center gap-2 mb-1">
           <span className="flex items-center gap-2 bg-gradient-to-r from-yellow-300 via-pink-400 to-red-400 bg-clip-text text-transparent text-3xl font-extrabold tracking-wide drop-shadow-md animate-fade-in">
             <span role="img" aria-label="journey">🗺️</span> Customer Journey Map
           </span>
         </div>
-        <JourneyTracking
-          entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
 
         <AnalyticsDashboard
           emotionHistory={emotionHistory} unhappyCount={unhappyCount} autoCapture={autoCapture} backendStatus={backendStatus} />
+        {/* Add unique heading inside the AnalyticsDashboard if needed in that component */}
       </div>
       <Sidebar
         currentEmotion={currentEmotion} emotionConfidence={emotionConfidence} entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} emotionScores={emotionScores} emotionHistory={emotionHistory} ageGuess={ageGuess} genderGuess={genderGuess} />
     </div>
   );
 };
+
 export default MainContentLayout;
