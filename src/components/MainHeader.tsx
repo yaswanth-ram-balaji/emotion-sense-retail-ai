@@ -72,26 +72,32 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
     <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
 
-      {/* Camera/Upload Mode Toggle */}
+      {/* Camera/Upload Mode Toggle --- STYLE UPDATED */}
       <Button
-        variant={useUpload ? "secondary" : "default"}
+        variant="default"
         className={`
-          flex items-center gap-1 px-4 py-2 rounded-lg font-bold uppercase transition
-          border-2
+          flex items-center gap-2 px-6 py-2 rounded-full font-extrabold uppercase text-base transition
+          border-none ring-2 ring-offset-2 ring-purple-500
+          shadow-xl
+          bg-gradient-to-br
           ${useUpload 
-            ? 'border-pink-400 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 text-white'
-            : 'border-green-400 bg-gradient-to-r from-green-500 via-lime-400 to-teal-400 text-white'}
-          shadow-md
+            ? 'from-pink-500 via-fuchsia-500 to-purple-600 hover:from-pink-400 hover:via-fuchsia-400 hover:to-purple-500'
+            : 'from-green-400 via-teal-400 to-blue-500 hover:from-green-300 hover:via-teal-300 hover:to-blue-400'}
+          text-white
+          scale-105 hover:scale-110 duration-150 ease-in-out
         `}
         onClick={() => setUseUpload(!useUpload)}
+        style={{ minWidth: 150, letterSpacing: '0.04em', outline: 0 }}
       >
         {useUpload ? (
           <>
-            <Upload className="w-5 h-5 mr-1" /> Upload Photo
+            <Upload className="w-6 h-6 mr-2" />
+            <span className="drop-shadow font-bold">Photo Upload</span>
           </>
         ) : (
           <>
-            <Camera className="w-5 h-5 mr-1" /> Camera Mode
+            <Camera className="w-6 h-6 mr-2" />
+            <span className="drop-shadow font-bold">Camera Mode</span>
           </>
         )}
       </Button>
@@ -163,4 +169,3 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 );
 
 export default MainHeader;
-
