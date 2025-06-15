@@ -46,7 +46,6 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     {/* --- Top-right backend status dot, moved further in mobile view --- */}
     <span className={`
         absolute 
-        ${/* On small screens, move closer to true top-right; on desktop, keep more standard spacing */""}
         top-1 right-2
         sm:top-3 sm:right-3
         z-50
@@ -80,7 +79,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         </label>
       </div>
 
-      {/* Model Selector (Updated Style) */}
+      {/* Model Selector (Name "Model" Added) */}
       <div className="min-w-[140px] mx-0">
         <Select value={selectedModel} onValueChange={onModelChange}>
           <SelectTrigger className="
@@ -90,7 +89,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
             uppercase text-xs tracking-wide outline-none focus-visible:ring-2 focus-visible:ring-pink-400
           ">
             <span>
-              {selectedModel ? emotionModels.find(m => m.value === selectedModel)?.label : "Select Model"}
+              Model: {selectedModel ? emotionModels.find(m => m.value === selectedModel)?.label : "Select Model"}
             </span>
           </SelectTrigger>
           <SelectContent className="bg-violet-950/95 rounded-lg shadow-2xl border-2 border-violet-800 z-[70]">
