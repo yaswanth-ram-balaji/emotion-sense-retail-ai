@@ -139,54 +139,21 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   // Media query for mobile: max-width 1023px
   const isMobile = window.matchMedia("(max-width: 1023px)").matches;
   if (isMobile) {
-    return (
-      <div className="flex flex-col gap-5">
+    return <div className="flex flex-col gap-5">
 
         {/* 1. Live AI Emotion Detection */}
         <div>
-          <CameraPanel
-            useUpload={useUpload}
-            fullscreen={fullscreen}
-            setFullscreen={setFullscreen}
-            photoUrl={photoUrl}
-            setPhotoUrl={setPhotoUrl}
-            detectEmotionFromPhoto={detectEmotionFromPhoto}
-            isAnalyzing={isAnalyzing}
-            backendStatus={backendStatus}
-            autoCapture={autoCapture}
-            onAutoCaptureChange={onAutoCaptureChange}
-            onAnalyzeEntry={onAnalyzeEntry}
-            onAnalyzeExit={onAnalyzeExit}
-            onCompare={onCompare}
-            onReset={onReset}
-            entryEmotion={entryEmotion}
-            exitEmotion={exitEmotion}
-            faceBlur={faceBlur}
-            cameraVideoRef={cameraVideoRef}
-          />
+          <CameraPanel useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
         </div>
 
         {/* 2. Live AI Detection real-time values */}
         <div className="pt-1">
-          <CurrentEmotion
-            emotion={currentEmotion}
-            confidence={emotionConfidence}
-            emotionScores={emotionScores}
-            getEmotionEmoji={getEmotionEmoji}
-            getEmotionColor={getEmotionColor}
-          />
+          <CurrentEmotion emotion={currentEmotion} confidence={emotionConfidence} emotionScores={emotionScores} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} />
         </div>
 
         {/* 3. Customer Journey */}
         <div className="pt-1">
-          <JourneyTracking
-            entryEmotion={entryEmotion}
-            exitEmotion={exitEmotion}
-            satisfactionResult={satisfactionResult}
-            getEmotionEmoji={getEmotionEmoji}
-            getEmotionColor={getEmotionColor}
-            getSatisfactionColor={getSatisfactionColor}
-          />
+          <JourneyTracking entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
         </div>
 
         {/* 4. Emotion Metrics */}
@@ -218,39 +185,27 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         <div>
           <SidebarInsightsCard />
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Desktop/tablet version
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  return <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
 
-        <CameraPanel
-          useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
+        <CameraPanel useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
         <div className="mt-2 flex items-center gap-2 mb-1">
-          <span className="flex items-center gap-2 font-black bg-gradient-to-r from-fuchsia-400 via-cyan-400 to-violet-600 bg-clip-text text-transparent text-3xl drop-shadow-lg animate-scale-in">
-            <span role="img" aria-label="camera">📷</span> Live AI Detection
-          </span>
+          
         </div>
 
-        <JourneyTracking
-          entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
+        <JourneyTracking entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} getEmotionEmoji={getEmotionEmoji} getEmotionColor={getEmotionColor} getSatisfactionColor={getSatisfactionColor} />
         <div className="mt-2 flex items-center gap-2 mb-1">
-          <span className="flex items-center gap-2 bg-gradient-to-r from-yellow-300 via-pink-400 to-red-400 bg-clip-text text-transparent text-3xl font-extrabold tracking-wide drop-shadow-md animate-fade-in">
-            <span role="img" aria-label="journey">🗺️</span> Customer Journey Map
-          </span>
+          
         </div>
 
-        <AnalyticsDashboard
-          emotionHistory={emotionHistory} unhappyCount={unhappyCount} autoCapture={autoCapture} backendStatus={backendStatus} />
+        <AnalyticsDashboard emotionHistory={emotionHistory} unhappyCount={unhappyCount} autoCapture={autoCapture} backendStatus={backendStatus} />
         {/* Add unique heading inside the AnalyticsDashboard if needed in that component */}
       </div>
-      <Sidebar
-        currentEmotion={currentEmotion} emotionConfidence={emotionConfidence} entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} emotionScores={emotionScores} emotionHistory={emotionHistory} ageGuess={ageGuess} genderGuess={genderGuess} />
-    </div>
-  );
+      <Sidebar currentEmotion={currentEmotion} emotionConfidence={emotionConfidence} entryEmotion={entryEmotion} exitEmotion={exitEmotion} satisfactionResult={satisfactionResult} emotionScores={emotionScores} emotionHistory={emotionHistory} ageGuess={ageGuess} genderGuess={genderGuess} />
+    </div>;
 };
-
 export default MainContentLayout;
