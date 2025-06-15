@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
@@ -47,7 +46,7 @@ const EmotionHeatmap = ({ emotionHistory }) => {
   return (
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-100">
+        <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg md:text-xl">
           <BarChart3 className="h-5 w-5" />
           Emotion Heatmap (by Hour)
         </CardTitle>
