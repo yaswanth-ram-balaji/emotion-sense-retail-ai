@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 
 interface CameraControlsProps {
   autoCapture: boolean;
-  privacyOptOut: boolean;
   backendStatus: "connected" | "disconnected" | "checking";
   isAnalyzing: boolean;
   onAutoCaptureChange: (val: boolean) => void;
@@ -84,4 +83,3 @@ const CameraControls: React.FC<CameraControlsProps> = ({
 );
 
 export default CameraControls;
-
