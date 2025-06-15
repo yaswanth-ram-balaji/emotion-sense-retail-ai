@@ -28,55 +28,70 @@ async def detect_face(payload: ImageInput):
 
 @app.post("/analyze_emotion")
 async def analyze_emotion(payload: ImageInput):
+    print("DEBUG: analyze_emotion called")
     try:
         try:
+            print("DEBUG: Decoding image")
             imgdata = base64.b64decode(payload.image_base64.split(",")[-1])
+            print("DEBUG: Opening image with PIL")
             img = Image.open(BytesIO(imgdata)).convert("RGB")
+            print("DEBUG: Converting image to numpy array")
             np_img = np.array(img)
         except Exception as e:
-            print("Error decoding or opening the image")
+            print("ERROR: Error decoding or opening the image")
             traceback.print_exc()
-            raise HTTPException(status_code=400, detail="Invalid image")
+            raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
 
+        print(f"DEBUG: Analysis method = {payload.method}")
         if payload.method == "fer":
             try:
+                print("DEBUG: Importing FER")
                 from fer import FER
+                print("DEBUG: Creating FER detector")
                 detector = FER(mtcnn=True)
+                print("DEBUG: Running detect_emotions")
                 result = detector.detect_emotions(np_img)
+                print(f"DEBUG: FER result: {result}")
                 if result:
                     emotions_dict = result[0]["emotions"]
+                    print(f"DEBUG: FER emotions dict: {emotions_dict}")
                     emotion = max(emotions_dict, key=emotions_dict.get)
                     score = float(emotions_dict[emotion])
                     return {"emotion": emotion, "confidence": score}
                 else:
+                    print("DEBUG: No emotions detected, defaulting to neutral")
                     return {"emotion": "neutral", "confidence": 0.0}
-            except ImportError:
-                print("FER library not installed")
+            except ImportError as e:
+                print("ERROR: FER library not installed")
                 traceback.print_exc()
-                raise HTTPException(status_code=500, detail="FER not installed")
+                raise HTTPException(status_code=500, detail=f"FER not installed: {e}")
             except Exception as e:
-                print(f"Exception in FER emotion analysis: {e}")
+                print(f"ERROR: Exception in FER emotion analysis: {e}")
                 traceback.print_exc()
                 return {"emotion": "neutral", "confidence": 0.0}
         elif payload.method == "deepface":
             try:
+                print("DEBUG: Importing DeepFace")
                 from deepface import DeepFace
+                print("DEBUG: Running DeepFace.analyze")
                 res = DeepFace.analyze(img_path=np_img, actions=['emotion'], enforce_detection=False)
+                print(f"DEBUG: DeepFace result: {res}")
                 emotion = res['dominant_emotion']
                 score = float(res["emotion"][emotion]) / 100
                 return {"emotion": emotion, "confidence": score}
-            except ImportError:
-                print("DeepFace library not installed")
+            except ImportError as e:
+                print("ERROR: DeepFace library not installed")
                 traceback.print_exc()
-                raise HTTPException(status_code=500, detail="DeepFace not installed")
+                raise HTTPException(status_code=500, detail=f"DeepFace not installed: {e}")
             except Exception as e:
-                print(f"Exception in DeepFace emotion analysis: {e}")
+                print(f"ERROR: Exception in DeepFace emotion analysis: {e}")
                 traceback.print_exc()
                 return {"emotion": "neutral", "confidence": 0.0}
         else:
-            raise HTTPException(status_code=400, detail="Invalid method")
+            print("ERROR: Invalid method specified")
+            raise HTTPException(status_code=400, detail=f"Invalid method: {payload.method}")
     except Exception as e:
-        print(f"Uncaught exception in analyze_emotion: {e}")
+        print(f"CRITICAL: Uncaught exception in analyze_emotion: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
