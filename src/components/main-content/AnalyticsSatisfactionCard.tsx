@@ -1,16 +1,15 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
 interface AnalyticsSatisfactionCardProps {
   emotionHistory: any[];
   unhappyCount: number;
 }
-
-const AnalyticsSatisfactionCard: React.FC<AnalyticsSatisfactionCardProps> = ({ emotionHistory, unhappyCount }) => (
-  <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+const AnalyticsSatisfactionCard: React.FC<AnalyticsSatisfactionCardProps> = ({
+  emotionHistory,
+  unhappyCount
+}) => <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
+      <CardTitle className="text-base text-slate-200 font-bold sm:text-xl">
         Smiles & Satisfaction Barometer
       </CardTitle>
     </CardHeader>
@@ -25,7 +24,5 @@ const AnalyticsSatisfactionCard: React.FC<AnalyticsSatisfactionCardProps> = ({ e
         </div>
       </div>
     </CardContent>
-  </Card>
-);
-
+  </Card>;
 export default AnalyticsSatisfactionCard;
