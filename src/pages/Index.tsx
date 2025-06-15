@@ -669,6 +669,7 @@ const Index = () => {
           faceBlur={faceBlur}
           ageGuess={ageGuess}
           genderGuess={genderGuess}
+          cameraVideoRef={videoRef} {/* <<< NEW PROP */}
         />
       </div>
     </div>

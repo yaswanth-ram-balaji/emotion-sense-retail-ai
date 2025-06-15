@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { Camera, Fullscreen, Upload, SwitchCamera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -19,21 +18,24 @@ interface CameraFeedProps {
 }
 
 const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
-  ({
-    className,
-    selectedDeviceId,
-    onPhotoUpload,
-    showUpload,
-    fullscreen,
-    onToggleFullscreen,
-    photoUrl,
-    faceBlur,
-    onFlipCamera,
-    canFlip,
-    flipLabel
-  }, ref) => {
-    const localVideoRef = useRef<HTMLVideoElement>(null);
-    const videoRef = (ref as React.RefObject<HTMLVideoElement>) || localVideoRef;
+  (
+    {
+      className,
+      selectedDeviceId,
+      onPhotoUpload,
+      showUpload,
+      fullscreen,
+      onToggleFullscreen,
+      photoUrl,
+      faceBlur,
+      onFlipCamera,
+      canFlip,
+      flipLabel
+    },
+    ref // main ref from parent
+  ) => {
+    // Remove the use of localVideoRef. Always use the provided "ref" for the <video>
+    const videoRef = (ref as React.RefObject<HTMLVideoElement>);
     const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
 
     // Device change logic (front/back camera)
@@ -64,7 +66,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             }
           };
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          if (videoRef.current) {
+          if (videoRef && videoRef.current) {
             videoRef.current.srcObject = stream;
           }
           currentStream = stream;
@@ -107,6 +109,10 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       e.target.value = '';
     };
 
+    // Add fallback error if no camera is found or available.
+    const noCameraAvailable =
+      !photoUrl && (!videoRef || !videoRef.current || !videoRef.current.srcObject);
+
     // Face zone size: larger (w-80 h-96)
     return (
       <div
@@ -132,7 +138,12 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               className="w-full h-full object-cover"
             />
           )}
-          
+          {noCameraAvailable && (
+            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-50">
+              <span className="text-red-400 font-bold text-lg mb-2">No Camera Available</span>
+              <span className="text-slate-100 text-xs">Please check browser camera permissions or connect a camera device.</span>
+            </div>
+          )}
           {/* Overlay UI */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Bigger Face detection frame */}
@@ -200,7 +211,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
         <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <Camera className="w-3 h-3" />
-            <span>{photoUrl ? 'Photo Upload Preview' : 'Position face within the detection zone'}</span>
+            <span>{photoUrl ? 'Photo Upload Preview' : noCameraAvailable ? 'Camera Not Active' : 'Position face within the detection zone'}</span>
           </div>
           <span>960x720 • 30fps</span>
         </div>
@@ -212,4 +223,3 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
 CameraFeed.displayName = 'CameraFeed';
 
 export default CameraFeed;
-

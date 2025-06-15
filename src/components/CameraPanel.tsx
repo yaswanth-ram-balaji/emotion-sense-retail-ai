@@ -26,6 +26,7 @@ interface CameraPanelProps {
   entryEmotion: string;
   exitEmotion: string;
   faceBlur: boolean;
+  cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
 const CameraPanel: React.FC<CameraPanelProps> = ({
@@ -46,6 +47,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
   entryEmotion,
   exitEmotion,
   faceBlur,
+  cameraVideoRef,
 }) => {
   // Camera devices and selected ID for flip/switch camera
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
@@ -96,6 +98,9 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
           {backendStatus === 'disconnected' && (
             <Badge variant="destructive">Offline</Badge>
           )}
+          {backendStatus === 'connected' && (
+            <Badge variant="default" className="ml-2 bg-green-600">Camera Live</Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -129,7 +134,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
         ) : (
           <CameraFeed
             fullscreen={fullscreen}
-            ref={null}
+            ref={cameraVideoRef ?? null} // << USE true ref if provided
             showUpload={false}
             onToggleFullscreen={() => setFullscreen(!fullscreen)}
             faceBlur={faceBlur}

@@ -1,4 +1,3 @@
-
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -30,6 +29,7 @@ interface MainContentLayoutProps {
   faceBlur: boolean;
   ageGuess?: number | null;
   genderGuess?: string | null;
+  cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
@@ -58,6 +58,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   faceBlur,
   ageGuess,
   genderGuess,
+  cameraVideoRef
 }) => (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-2 space-y-6">
@@ -79,6 +80,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         entryEmotion={entryEmotion}
         exitEmotion={exitEmotion}
         faceBlur={faceBlur}
+        cameraVideoRef={cameraVideoRef} // pass ref down
       />
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
