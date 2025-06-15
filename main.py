@@ -1,12 +1,14 @@
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 import base64
 from io import BytesIO
 from PIL import Image
 import numpy as np
 import traceback
+import sys
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -21,6 +23,10 @@ app.add_middleware(
 class ImageInput(BaseModel):
     image_base64: str
     method: str = "fer"  # Default is FER, or you can use "deepface"
+
+def log_error_to_file(msg):
+    with open("backend_errors.log", "a", encoding="utf-8") as f:
+        f.write(msg + "\n")
 
 @app.post("/detect-face")
 async def detect_face(payload: ImageInput):
@@ -38,8 +44,9 @@ async def analyze_emotion(payload: ImageInput):
             print("DEBUG: Converting image to numpy array")
             np_img = np.array(img)
         except Exception as e:
-            print("ERROR: Error decoding or opening the image")
-            traceback.print_exc()
+            error_msg = "ERROR: Error decoding or opening the image\n" + traceback.format_exc()
+            print(error_msg)
+            log_error_to_file(error_msg)
             raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
 
         print(f"DEBUG: Analysis method = {payload.method}")
@@ -62,12 +69,14 @@ async def analyze_emotion(payload: ImageInput):
                     print("DEBUG: No emotions detected, defaulting to neutral")
                     return {"emotion": "neutral", "confidence": 0.0}
             except ImportError as e:
-                print("ERROR: FER library not installed")
-                traceback.print_exc()
+                error_msg = "ERROR: FER library not installed\n" + traceback.format_exc()
+                print(error_msg)
+                log_error_to_file(error_msg)
                 raise HTTPException(status_code=500, detail=f"FER not installed: {e}")
             except Exception as e:
-                print(f"ERROR: Exception in FER emotion analysis: {e}")
-                traceback.print_exc()
+                error_msg = f"ERROR: Exception in FER emotion analysis: {e}\n" + traceback.format_exc()
+                print(error_msg)
+                log_error_to_file(error_msg)
                 return {"emotion": "neutral", "confidence": 0.0}
         elif payload.method == "deepface":
             try:
@@ -80,21 +89,27 @@ async def analyze_emotion(payload: ImageInput):
                 score = float(res["emotion"][emotion]) / 100
                 return {"emotion": emotion, "confidence": score}
             except ImportError as e:
-                print("ERROR: DeepFace library not installed")
-                traceback.print_exc()
+                error_msg = "ERROR: DeepFace library not installed\n" + traceback.format_exc()
+                print(error_msg)
+                log_error_to_file(error_msg)
                 raise HTTPException(status_code=500, detail=f"DeepFace not installed: {e}")
             except Exception as e:
-                print(f"ERROR: Exception in DeepFace emotion analysis: {e}")
-                traceback.print_exc()
+                error_msg = f"ERROR: Exception in DeepFace emotion analysis: {e}\n" + traceback.format_exc()
+                print(error_msg)
+                log_error_to_file(error_msg)
                 return {"emotion": "neutral", "confidence": 0.0}
         else:
-            print("ERROR: Invalid method specified")
+            error_msg = f"ERROR: Invalid method specified\n"
+            print(error_msg)
+            log_error_to_file(error_msg)
             raise HTTPException(status_code=400, detail=f"Invalid method: {payload.method}")
     except Exception as e:
-        print(f"CRITICAL: Uncaught exception in analyze_emotion: {e}")
-        traceback.print_exc()
+        error_msg = f"CRITICAL: Uncaught exception in analyze_emotion: {e}\n" + traceback.format_exc()
+        print(error_msg)
+        log_error_to_file(error_msg)
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @app.get("/")
 async def root():
     # ... keep existing code (root) the same ...
+
