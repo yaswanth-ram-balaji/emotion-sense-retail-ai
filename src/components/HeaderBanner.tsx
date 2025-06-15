@@ -47,7 +47,7 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ backendStatus, selectedMode
               outline-none ring-2 ring-transparent focus:ring-purple-500
               "
           >
-            <SelectValue>
+            <SelectValue placeholder="Select the model">
               {emotionModels.find(m => m.value === selectedModel)?.label}
             </SelectValue>
           </SelectTrigger>
