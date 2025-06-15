@@ -64,9 +64,16 @@ async def analyze_emotion(payload: ImageInput):
                     score = float(best["score"])
                     # Convert all emotion scores to a dict
                     emotion_scores = {r['label'].lower(): float(r['score'])*100 for r in result}
-                    return {"emotion": emotion, "confidence": score, "emotion_scores": emotion_scores}
+                    # HuggingFace FER+ does NOT provide age/gender, so return null/None
+                    return {
+                        "emotion": emotion,
+                        "confidence": score,
+                        "emotion_scores": emotion_scores,
+                        "age": None,
+                        "gender": None,
+                    }
                 else:
-                    return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
+                    return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}, "age": None, "gender": None}
             except ImportError as e:
                 error_msg = "ERROR: transformers library not installed\n" + traceback.format_exc()
                 print(error_msg)
@@ -76,18 +83,27 @@ async def analyze_emotion(payload: ImageInput):
                 error_msg = f"ERROR: Exception in HuggingFace emotion analysis: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
+                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}, "age": None, "gender": None}
         elif payload.method == "deepface":
             try:
                 print("DEBUG: Importing DeepFace")
                 from deepface import DeepFace
                 print("DEBUG: Running DeepFace.analyze")
-                res = DeepFace.analyze(img_path=np_img, actions=['emotion'], enforce_detection=False)
+                # Run demographic estimation as well
+                res = DeepFace.analyze(img_path=np_img, actions=['emotion', 'age', 'gender'], enforce_detection=False)
                 print(f"DEBUG: DeepFace result: {res}")
                 emotion = res['dominant_emotion']
                 scores_dict = res['emotion']
                 score = scores_dict.get(emotion, 0.0)
-                return {"emotion": emotion, "confidence": float(score)/100, "emotion_scores": scores_dict}
+                age = res.get('age', None)
+                gender = res.get('gender', None)
+                return {
+                    "emotion": emotion,
+                    "confidence": float(score)/100,
+                    "emotion_scores": scores_dict,
+                    "age": age,
+                    "gender": gender,
+                }
             except ImportError as e:
                 error_msg = "ERROR: DeepFace library not installed\n" + traceback.format_exc()
                 print(error_msg)
@@ -97,7 +113,7 @@ async def analyze_emotion(payload: ImageInput):
                 error_msg = f"ERROR: Exception in DeepFace emotion analysis: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
+                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}, "age": None, "gender": None}
         else:
             error_msg = f"ERROR: Invalid method specified\n"
             print(error_msg)
@@ -112,4 +128,3 @@ async def analyze_emotion(payload: ImageInput):
 @app.get("/")
 async def root():
     # ... keep existing code (root) the same ...
-
