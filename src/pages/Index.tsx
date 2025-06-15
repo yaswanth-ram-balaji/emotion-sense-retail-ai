@@ -68,6 +68,36 @@ const Index = () => {
   const [ageGuess, setAgeGuess] = useState<number | null>(null);
   const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
+  // helper: robust extraction for demographics
+  function extractAgeGender(obj: any): { age: number | null, gender: string | null } {
+    if (!obj || typeof obj !== "object") return { age: null, gender: null };
+    let age: number | null = null;
+    let gender: string | null = null;
+
+    // Try to extract age from various possible keys
+    if (typeof obj.age === "number") age = Math.round(obj.age);
+    else if (typeof obj.Age === "number") age = Math.round(obj.Age);
+    else if (typeof obj.age_guess === "number") age = Math.round(obj.age_guess);
+    else if (typeof obj.ageGuess === "number") age = Math.round(obj.ageGuess);
+
+    // Try gender from various likely keys, with case normalization
+    if (typeof obj.gender === "string" && obj.gender.trim() !== "") gender = obj.gender[0].toUpperCase() + obj.gender.slice(1);
+    else if (typeof obj.Gender === "string" && obj.Gender.trim() !== "") gender = obj.Gender[0].toUpperCase() + obj.Gender.slice(1);
+    else if (typeof obj.gender_guess === "string" && obj.gender_guess.trim() !== "") gender = obj.gender_guess[0].toUpperCase() + obj.gender_guess.slice(1);
+    else if (typeof obj.genderGuess === "string" && obj.genderGuess.trim() !== "") gender = obj.genderGuess[0].toUpperCase() + obj.genderGuess.slice(1);
+
+    // Also check children
+    for (const key of Object.keys(obj)) {
+      if (typeof obj[key] === "object") {
+        const nested = extractAgeGender(obj[key]);
+        if (nested.age !== null && age === null) age = nested.age;
+        if (nested.gender !== null && gender === null) gender = nested.gender;
+      }
+    }
+
+    return { age, gender };
+  }
+
   // Check backend connectivity
   const checkBackendConnection = async () => {
     try {
@@ -169,7 +199,6 @@ const Index = () => {
 
   const detectCurrentEmotion = async () => {
     if (isAnalyzing || backendStatus !== 'connected') return;
-
     setIsAnalyzing(true);
 
     try {
@@ -177,11 +206,7 @@ const Index = () => {
       const imageBase64 = await captureImage();
       console.log('Image captured, processing...');
 
-      let emotion: string;
-      let confidence: number;
-      let emotionScores: Record<string, number> | undefined;
-
-      // Step 1: Detect face with proper headers
+      // Detect face
       const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
         method: 'POST',
         mode: 'cors',
@@ -191,11 +216,9 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
         throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
       }
-
       const faceData = await faceResponse.json();
       console.log('Face detection response:', faceData);
 
@@ -213,36 +236,32 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
         throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
       }
 
       const emotionData = await emotionResponse.json();
-      console.log('Emotion analysis response:', emotionData);
+      console.log('Emotion analysis response (full):', emotionData);
 
-      emotion = emotionData.emotion;
-      confidence = emotionData.confidence || 0.85;
-      emotionScores = emotionData.emotion_scores || null;
+      // robustly extract demographics
+      const { age, gender } = extractAgeGender(emotionData);
+      setAgeGuess(age);
+      setGenderGuess(gender);
 
-      setCurrentEmotion(emotion);
-      setEmotionConfidence(confidence);
-      setCurrentEmotionScores(emotionScores);
+      // warn if neither found
+      if (age === null && gender === null) {
+        toast({
+          title: "No Demographic Data",
+          description: "Could not extract age/gender from backend response.",
+          variant: "default"
+        });
+      }
 
-      // NEW: demographic info extraction (if provided)
-      setAgeGuess(
-        typeof emotionData.age === "number"
-          ? Math.round(emotionData.age)
-          : emotionData.age_guess ?? null
-      );
-      setGenderGuess(
-        emotionData.gender?.charAt(0).toUpperCase() + emotionData.gender?.slice(1) ||
-          emotionData.gender_guess ||
-          null
-      );
-      console.log("Index.tsx detectCurrentEmotion: ageGuess", emotionData.age, "genderGuess", emotionData.gender);
+      setCurrentEmotion(emotionData.emotion);
+      setEmotionConfidence(emotionData.confidence || 0.85);
+      setCurrentEmotionScores(emotionData.emotion_scores || null);
 
-      console.log(`Detected emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
+      console.log(`Detected emotion: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}% confidence)`);
       if (emotionScores) {
         console.log('Emotion scores:', emotionScores);
       }
@@ -298,11 +317,9 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
         throw new Error(`Face detection failed: ${faceResponse.status}`);
       }
-
       const faceData = await faceResponse.json();
 
       if (!faceData.face_crop_base64) {
@@ -319,7 +336,6 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
         throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
       }
@@ -481,6 +497,7 @@ const Index = () => {
   const detectEmotionFromPhoto = async () => {
     if (!photoUrl) return;
     setIsAnalyzing(true);
+
     try {
       const imageBase64 = photoUrl.split(",")[1] || photoUrl;
 
@@ -494,11 +511,9 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
         throw new Error(`Face detection failed: ${faceResponse.status}`);
       }
-
       const faceData = await faceResponse.json();
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
@@ -514,26 +529,28 @@ const Index = () => {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
         throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
       }
       const emotionData = await emotionResponse.json();
+      console.log('Photo emotion analysis response (full):', emotionData);
+
+      // robustly extract demographics
+      const { age, gender } = extractAgeGender(emotionData);
+      setAgeGuess(age);
+      setGenderGuess(gender);
+
+      if (age === null && gender === null) {
+        toast({
+          title: "No Demographic Data",
+          description: "Could not extract age/gender from backend response.",
+          variant: "default"
+        });
+      }
+
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
-
-      // NEW: demographic info extraction (if provided)
-      setAgeGuess(
-        typeof emotionData.age === "number"
-          ? Math.round(emotionData.age)
-          : emotionData.age_guess ?? null
-      );
-      setGenderGuess(
-        emotionData.gender?.charAt(0).toUpperCase() + emotionData.gender?.slice(1) ||
-          emotionData.gender_guess ||
-          null
-      );
 
       toast({
         title: 'Photo Emotion Detected',
