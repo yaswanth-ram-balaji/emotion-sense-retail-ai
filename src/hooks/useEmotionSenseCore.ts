@@ -7,7 +7,6 @@ import {
   loadEmotionHistory,
   resetSessionState,
 } from './useEmotionSense';
-import { extractAgeGender } from '@/utils/demographics';
 
 export interface EmotionData {
   timestamp: string;
