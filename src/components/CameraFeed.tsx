@@ -172,26 +172,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             </div>
           </div>
         </div>
-        {/* Camera device selection (bottom left) */}
-        {availableDevices.length > 1 && !photoUrl && (
-          <div className="absolute bottom-4 left-4 z-10 bg-black/60 text-white text-xs rounded px-3 py-2 flex items-center gap-2 pointer-events-auto">
-            <span>Camera:</span>
-            <select
-              value={selectedDeviceId || ''}
-              onChange={e => {
-                // Since parent manages prop pass-down, no-op here (delegated to parent)
-              }}
-              className="bg-slate-900 border border-slate-500 rounded px-2 py-1 text-xs text-white outline-none"
-              style={{ minWidth: 120 }}
-              disabled
-            >
-              {availableDevices.map(device => (
-                <option key={device.deviceId} value={device.deviceId}>{device.label || "Camera"}</option>
-              ))}
-            </select>
-            {/* Selection is now in parent. For extensibility, selection could pass event up */}
-          </div>
-        )}
         {/* Camera info */}
         <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">

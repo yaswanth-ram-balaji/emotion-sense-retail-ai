@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from "lucide-react";
@@ -10,8 +9,6 @@ import CameraControls from "@/components/CameraControls";
 
 interface CameraPanelProps {
   useUpload: boolean;
-  cameraDevices: MediaDeviceInfo[];
-  selectedDeviceId?: string;
   fullscreen: boolean;
   setFullscreen: (val: boolean) => void;
   photoUrl: string | null;
@@ -32,8 +29,6 @@ interface CameraPanelProps {
 
 const CameraPanel: React.FC<CameraPanelProps> = ({
   useUpload,
-  cameraDevices,
-  selectedDeviceId,
   fullscreen,
   setFullscreen,
   photoUrl,
@@ -92,10 +87,9 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
           </>
         ) : (
           <CameraFeed
-            selectedDeviceId={selectedDeviceId}
+            fullscreen={fullscreen}
             ref={null}
             showUpload={false}
-            fullscreen={fullscreen}
             onToggleFullscreen={() => setFullscreen(!fullscreen)}
             faceBlur={faceBlur}
           />

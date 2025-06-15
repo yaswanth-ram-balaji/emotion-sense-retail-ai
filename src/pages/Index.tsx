@@ -50,7 +50,6 @@ const Index = () => {
   const [entryEmotion, setEntryEmotion] = useState<string>('');
   const [exitEmotion, setExitEmotion] = useState<string>('');
   const [satisfactionResult, setSatisfactionResult] = useState<SatisfactionResult | null>(null);
-  const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
@@ -58,11 +57,9 @@ const Index = () => {
   const [selectedModel, setSelectedModel] = useState<string>('fer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [fullscreen, setFullscreen] = useState<boolean>(false);
   const [useUpload, setUseUpload] = useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
   const [ageGuess, setAgeGuess] = useState<number | null>(null);
   const [genderGuess, setGenderGuess] = useState<string | null>(null);
@@ -450,17 +447,12 @@ const Index = () => {
     }
   };
 
-  // Camera device list discovery for parent dropdown (not just in CameraFeed)
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices()
       .then(devices => {
         const cameras = devices.filter(d => d.kind === 'videoinput');
-        setCameraDevices(cameras);
-        if (!selectedDeviceId && cameras.length > 0) {
-          setSelectedDeviceId(cameras[0].deviceId);
-        }
       })
-      .catch(() => setCameraDevices([]));
+      .catch(() => {});
     // Do not set as dependency to avoid endless devices call loop
     // eslint-disable-next-line
   }, []);
@@ -631,9 +623,6 @@ const Index = () => {
             setUseUpload(v);
             if (!v) setPhotoUrl(null);
           }}
-          cameraDevices={cameraDevices}
-          selectedDeviceId={selectedDeviceId}
-          onDeviceChange={setSelectedDeviceId}
         />
 
         {/* Face Blur Mode Control */}
@@ -652,8 +641,6 @@ const Index = () => {
 
         <MainContentLayout
           useUpload={useUpload}
-          cameraDevices={cameraDevices}
-          selectedDeviceId={selectedDeviceId}
           fullscreen={fullscreen}
           setFullscreen={setFullscreen}
           photoUrl={photoUrl}

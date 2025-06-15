@@ -1,3 +1,4 @@
+
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -5,8 +6,6 @@ import CameraPanel from "@/components/CameraPanel";
 
 interface MainContentLayoutProps {
   useUpload: boolean;
-  cameraDevices: MediaDeviceInfo[];
-  selectedDeviceId?: string;
   fullscreen: boolean;
   setFullscreen: (val: boolean) => void;
   photoUrl: string | null;
@@ -35,8 +34,6 @@ interface MainContentLayoutProps {
 
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
-  cameraDevices,
-  selectedDeviceId,
   fullscreen,
   setFullscreen,
   photoUrl,
@@ -66,8 +63,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
     <div className="lg:col-span-2 space-y-6">
       <CameraPanel
         useUpload={useUpload}
-        cameraDevices={cameraDevices}
-        selectedDeviceId={selectedDeviceId}
         fullscreen={fullscreen}
         setFullscreen={setFullscreen}
         photoUrl={photoUrl}
