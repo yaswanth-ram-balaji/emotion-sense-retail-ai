@@ -11,7 +11,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, restrict to your frontend domain.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,28 +24,19 @@ class ImageInput(BaseModel):
 @app.post("/detect-face")
 async def detect_face(payload: ImageInput):
     """
-    Demo implementation: This just verifies and returns the original face as base64.
-    Replace with real face detection logic as needed.
+    For demo purposes, just returns the input image as the face crop.
+    Replace this implementation with actual face cropping as needed.
     """
     try:
         imgdata = base64.b64decode(payload.image_base64.split(",")[-1])
-        try:
-            img = Image.open(BytesIO(imgdata)).convert("RGB")
-        except Exception as e:
-            print("Image.open error:", e)
-            raise HTTPException(status_code=400, detail=f"Unable to open image: {e}")
-        # Fake detection: just return the original cropped image for demo
+        img = Image.open(BytesIO(imgdata)).convert("RGB")
         buffered = BytesIO()
-        try:
-            img.save(buffered, format="JPEG")
-            face_crop_base64 = base64.b64encode(buffered.getvalue()).decode()
-            return {"face_crop_base64": face_crop_base64}
-        except Exception as e:
-            print("img.save error:", e)
-            raise HTTPException(status_code=400, detail=f"Unable to save image: {e}")
+        img.save(buffered, format="JPEG")
+        face_crop_base64 = base64.b64encode(buffered.getvalue()).decode()
+        return {"face_crop_base64": face_crop_base64}
     except Exception as e:
-        print("detect_face 500 error:", e)
-        raise HTTPException(status_code=400, detail=f"Unable to process image for face detection: {e}")
+        print("detect_face error:", e)
+        raise HTTPException(status_code=400, detail=f"Unable to process image: {e}")
 
 @app.post("/analyze_emotion")
 async def analyze_emotion(payload: ImageInput):
@@ -86,4 +77,4 @@ async def analyze_emotion(payload: ImageInput):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Emotion Analysis API. Use /analyze_emotion to analyze emotions from images."}
+    return {"message": "Welcome to the Face Detection and Emotion Analysis API. Use /detect-face to detect faces and /analyze_emotion to analyze emotions from images."}
