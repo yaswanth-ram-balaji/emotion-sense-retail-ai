@@ -7,7 +7,6 @@ import CameraFeed from "@/components/CameraFeed";
 import { Button } from "@/components/ui/button";
 import CameraControls from "@/components/CameraControls";
 import { useEffect, useState } from "react";
-
 interface CameraPanelProps {
   useUpload: boolean;
   fullscreen: boolean;
@@ -28,7 +27,6 @@ interface CameraPanelProps {
   faceBlur: boolean;
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
-
 const CameraPanel: React.FC<CameraPanelProps> = ({
   useUpload,
   fullscreen,
@@ -47,24 +45,21 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
   entryEmotion,
   exitEmotion,
   faceBlur,
-  cameraVideoRef,
+  cameraVideoRef
 }) => {
   // Camera devices and selected ID for flip/switch camera
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [lastFacingMode, setLastFacingMode] = useState<"user" | "environment">("user");
-
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices()
-      .then(all => {
-        const cams = all.filter(d => d.kind === "videoinput");
-        setDevices(cams);
-        // Set default facing mode (prefer user/front)
-        if (cams.length && !selectedDeviceId) {
-          setSelectedDeviceId(undefined);
-        }
-      })
-      .catch(() => {});
+    navigator.mediaDevices.enumerateDevices().then(all => {
+      const cams = all.filter(d => d.kind === "videoinput");
+      setDevices(cams);
+      // Set default facing mode (prefer user/front)
+      if (cams.length && !selectedDeviceId) {
+        setSelectedDeviceId(undefined);
+      }
+    }).catch(() => {});
     // Only run on mount
     // eslint-disable-next-line
   }, []);
@@ -88,85 +83,39 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
 
   // Label for the flip button
   let flipLabel = lastFacingMode === "user" ? "Switch to Back Camera" : "Switch to Front Camera";
-
-  return (
-    <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+  return <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-slate-100">
           <Camera className="h-5 w-5" />
           <span className="hidden sm:inline">Live AI Emotion Detection</span>
-          <span className="sm:hidden">AI Detection</span>
-          {backendStatus === 'disconnected' && (
-            <Badge variant="destructive">Offline</Badge>
-          )}
-          {backendStatus === 'connected' && (
-            <Badge 
-              variant="default" 
-              className="ml-0 sm:ml-2 bg-green-600 text-xs px-2 py-0.5 rounded-md whitespace-nowrap sm:text-sm"
-            >
+          <span className="sm:hidden font-normal text-base">AI Detection</span>
+          {backendStatus === 'disconnected' && <Badge variant="destructive">Offline</Badge>}
+          {backendStatus === 'connected' && <Badge variant="default" className="ml-0 sm:ml-2 bg-green-600 text-xs px-2 py-0.5 rounded-md whitespace-nowrap sm:text-sm">
               <span className="hidden xs:inline">Camera Live</span>
               <span className="xs:hidden">Live</span>
-            </Badge>
-          )}
+            </Badge>}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {useUpload ? (
-          <>
+        {useUpload ? <>
             <PhotoUploader onUpload={setPhotoUrl} />
-            {photoUrl && (
-              <>
-                <CameraFeed
-                  className="mt-4"
-                  photoUrl={photoUrl}
-                  showUpload={false}
-                  fullscreen={fullscreen}
-                  onToggleFullscreen={() => setFullscreen(!fullscreen)}
-                  faceBlur={faceBlur}
-                />
+            {photoUrl && <>
+                <CameraFeed className="mt-4" photoUrl={photoUrl} showUpload={false} fullscreen={fullscreen} onToggleFullscreen={() => setFullscreen(!fullscreen)} faceBlur={faceBlur} />
                 <div className="mt-4 flex gap-2 flex-wrap">
                   <Button onClick={detectEmotionFromPhoto} disabled={isAnalyzing}>
                     Detect Emotion
                   </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setPhotoUrl(null)}
-                  >
+                  <Button variant="secondary" onClick={() => setPhotoUrl(null)}>
                     Remove Photo
                   </Button>
                 </div>
-              </>
-            )}
-          </>
-        ) : (
-          <CameraFeed
-            fullscreen={fullscreen}
-            ref={cameraVideoRef ?? null} // << USE true ref if provided
-            showUpload={false}
-            onToggleFullscreen={() => setFullscreen(!fullscreen)}
-            faceBlur={faceBlur}
-            selectedDeviceId={selectedDeviceId}
-            // Flip/camera switch props
-            canFlip={devices.length > 1}
-            onFlipCamera={handleFlipCamera}
-            flipLabel={flipLabel}
-          />
-        )}
-        <CameraControls
-          autoCapture={autoCapture}
-          backendStatus={backendStatus}
-          isAnalyzing={isAnalyzing}
-          onAutoCaptureChange={onAutoCaptureChange}
-          onAnalyzeEntry={onAnalyzeEntry}
-          onAnalyzeExit={onAnalyzeExit}
-          onCompare={onCompare}
-          onReset={onReset}
-          entryEmotion={entryEmotion}
-          exitEmotion={exitEmotion}
-        />
+              </>}
+          </> : <CameraFeed fullscreen={fullscreen} ref={cameraVideoRef ?? null} // << USE true ref if provided
+      showUpload={false} onToggleFullscreen={() => setFullscreen(!fullscreen)} faceBlur={faceBlur} selectedDeviceId={selectedDeviceId}
+      // Flip/camera switch props
+      canFlip={devices.length > 1} onFlipCamera={handleFlipCamera} flipLabel={flipLabel} />}
+        <CameraControls autoCapture={autoCapture} backendStatus={backendStatus} isAnalyzing={isAnalyzing} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} />
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default CameraPanel;
