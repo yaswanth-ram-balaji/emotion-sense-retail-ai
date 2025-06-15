@@ -1,11 +1,10 @@
 
-// useEmotionSenseCore.ts (file refactored for brevity)
-// This file now just orchestrates between modules in useEmotionSense/
+// useEmotionSenseCore.ts
+// This file now orchestrates between modules in useEmotionSense/
 
 import { useState, useEffect, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-// FIXED: Correct import from the local index entry point
 import {
   getBackendUrl,
   checkBackendConnection,
@@ -51,38 +50,12 @@ export function useEmotionSenseCore() {
   const [ageGuess, setAgeGuess] = useState<number | null>(null);
   const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
-  const checkBackendConnection = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/docs', {
-        method: 'GET',
-        mode: 'cors'
-      });
-      if (response.ok) {
-        setBackendStatus('connected');
-        console.log('Backend connected successfully');
-        return true;
-      }
-    } catch (error) {
-      console.error('Backend connection failed:', error);
-    }
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/docs', {
-        method: 'GET',
-        mode: 'cors'
-      });
-      if (response.ok) {
-        setBackendStatus('connected');
-        console.log('Backend connected via 127.0.0.1');
-        return true;
-      }
-    } catch (error) {
-      console.error('Backend connection failed on 127.0.0.1:', error);
-    }
-
-    setBackendStatus('disconnected'); // Only real backend status
-    return false;
-  };
+  // Use imported helper for backend connection check
+  useEffect(() => {
+    checkBackendConnection(setBackendStatus);
+    loadEmotionHistory(backendStatus, setEmotionHistory);
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     if (autoCapture && backendStatus === 'connected') {
@@ -101,39 +74,11 @@ export function useEmotionSenseCore() {
         clearInterval(intervalRef.current);
       }
     };
+    // eslint-disable-next-line
   }, [autoCapture, backendStatus]);
 
-  useEffect(() => {
-    checkBackendConnection();
-    loadEmotionHistory();
-  }, []);
-
-  const getBackendUrl = () => {
-    return backendStatus === 'connected' ? 'http://localhost:8000' : 'http://127.0.0.1:8000';
-  };
-
-  const loadEmotionHistory = async () => {
-    try {
-      if (backendStatus === 'connected') {
-        const response = await fetch(`${getBackendUrl()}/emotion-log`, {
-          method: 'GET',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setEmotionHistory(data);
-          console.log('Loaded emotion history:', data);
-        }
-      }
-    } catch (error) {
-      console.log('Could not load emotion history:', error);
-    }
-  };
+  // Get backend URL from helper
+  const backendUrl = getBackendUrl(backendStatus);
 
   const captureImage = async (): Promise<string> => {
     if (!videoRef.current) throw new Error('Video not available');
@@ -159,7 +104,7 @@ export function useEmotionSenseCore() {
       console.log('Image captured, processing...');
 
       // Detect face
-      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -179,7 +124,7 @@ export function useEmotionSenseCore() {
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -198,22 +143,8 @@ export function useEmotionSenseCore() {
       // LOG RAW emotionData from backend for debug
       console.log("[DEBUG] Full backend emotionData (camera):", emotionData);
 
-      // Check root-level fields first
-      let age = null;
-      let gender = null;
-      if (typeof emotionData.age === "number" || typeof emotionData.age === "string") {
-        age = Number(emotionData.age);
-      }
-      if (typeof emotionData.gender === "string" && emotionData.gender.trim().length > 0) {
-        gender = String(emotionData.gender);
-      }
-
-      if (age === null && (!gender || gender === "null" || gender === "None")) {
-        // Try fallback extractor
-        const demo = extractAgeGender(emotionData);
-        age = demo.age;
-        gender = demo.gender;
-      }
+      // Demographic extraction
+      const { age, gender } = extractDemographicsFromBackend(emotionData);
 
       setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
       setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
@@ -241,7 +172,8 @@ export function useEmotionSenseCore() {
     } catch (error) {
       console.error('Error in emotion detection:', error);
 
-      const isConnected = await checkBackendConnection();
+      // Check backend connection via helper
+      const isConnected = await checkBackendConnection(setBackendStatus);
       if (!isConnected) {
         toast({
           title: "Backend Disconnected",
@@ -281,7 +213,7 @@ export function useEmotionSenseCore() {
       let emotionScores: Record<string, number> | undefined;
 
       // Step 1: Detect face
-      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -300,7 +232,7 @@ export function useEmotionSenseCore() {
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -378,7 +310,7 @@ export function useEmotionSenseCore() {
 
       // Only real backend used
       if (backendStatus === 'connected') {
-        const response = await fetch(`${getBackendUrl()}/compare-emotion`, {
+        const response = await fetch(`${backendUrl}/compare-emotion`, {
           method: 'POST',
           mode: 'cors',
           headers: {
@@ -410,28 +342,28 @@ export function useEmotionSenseCore() {
     }
   };
 
+  // Use imported helper for session reset to reduce code duplication
   const resetSession = () => {
-    setCurrentEmotion('');
-    setEmotionConfidence(0);
-    setEntryEmotion('');
-    setExitEmotion('');
-    setSatisfactionResult(null);
-    setAutoCapture(false);
-    toast({
-      title: "Session Reset",
-      description: "Ready for new customer analysis"
+    resetSessionState({
+      setCurrentEmotion,
+      setEmotionConfidence,
+      setEntryEmotion,
+      setExitEmotion,
+      setSatisfactionResult,
+      setAutoCapture,
+      toast,
     });
   };
 
   const retryBackendConnection = async () => {
     setBackendStatus('checking');
-    const connected = await checkBackendConnection();
+    const connected = await checkBackendConnection(setBackendStatus);
     if (connected) {
       toast({
         title: "Backend Connected",
         description: "Successfully connected to emotion detection server"
       });
-      loadEmotionHistory();
+      loadEmotionHistory(backendStatus, setEmotionHistory);
     } else {
       toast({
         title: "Connection Failed",
@@ -475,7 +407,7 @@ export function useEmotionSenseCore() {
       const imageBase64 = photoUrl.split(",")[1] || photoUrl;
 
       // Step 1: Detect face
-      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -493,7 +425,7 @@ export function useEmotionSenseCore() {
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -511,21 +443,8 @@ export function useEmotionSenseCore() {
       // LOG RAW emotionData from backend for debug
       console.log("[DEBUG] Full backend emotionData (photo):", emotionData);
 
-      // Check root-level fields first
-      let age = null;
-      let gender = null;
-      if (typeof emotionData.age === "number" || typeof emotionData.age === "string") {
-        age = Number(emotionData.age);
-      }
-      if (typeof emotionData.gender === "string" && emotionData.gender.trim().length > 0) {
-        gender = String(emotionData.gender);
-      }
-
-      if (age === null && (!gender || gender === "null" || gender === "None")) {
-        const demo = extractAgeGender(emotionData);
-        age = demo.age;
-        gender = demo.gender;
-      }
+      // Demographic extraction
+      const { age, gender } = extractDemographicsFromBackend(emotionData);
 
       setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
       setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
@@ -627,3 +546,5 @@ export function useEmotionSenseCore() {
     retryBackendConnection,
   };
 }
+
+// NOTE: This file is now 630+ lines long and should be refactored into smaller, focused hooks and helpers for future maintainability.
