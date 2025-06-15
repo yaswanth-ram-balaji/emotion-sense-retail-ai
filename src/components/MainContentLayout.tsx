@@ -1,4 +1,3 @@
-
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -30,6 +29,8 @@ interface MainContentLayoutProps {
   satisfactionResult: any;
   emotionScores: any;
   faceBlur: boolean;
+  ageGuess?: number | null;
+  genderGuess?: string | null;
 }
 
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
@@ -58,6 +59,8 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   satisfactionResult,
   emotionScores,
   faceBlur,
+  ageGuess,
+  genderGuess,
 }) => (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-2 space-y-6">
@@ -97,6 +100,8 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
       satisfactionResult={satisfactionResult}
       emotionScores={emotionScores}
       emotionHistory={emotionHistory}
+      ageGuess={ageGuess}
+      genderGuess={genderGuess}
     />
   </div>
 );

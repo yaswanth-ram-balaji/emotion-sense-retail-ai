@@ -21,6 +21,7 @@ import HeaderBanner from "@/components/HeaderBanner";
 import BackendAlert from "@/components/BackendAlert";
 import ModeToggle from "@/components/ModeToggle";
 import MainContentLayout from "@/components/MainContentLayout";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmotionData {
   timestamp: string;
@@ -63,6 +64,8 @@ const Index = () => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
+  const [ageGuess, setAgeGuess] = useState<number | null>(null);
+  const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
   // Check backend connectivity
   const checkBackendConnection = async () => {
@@ -224,6 +227,18 @@ const Index = () => {
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
       setCurrentEmotionScores(emotionScores);
+
+      // NEW: demographic info extraction (if provided)
+      setAgeGuess(
+        typeof emotionData.age === "number"
+          ? Math.round(emotionData.age)
+          : emotionData.age_guess ?? null
+      );
+      setGenderGuess(
+        emotionData.gender?.charAt(0).toUpperCase() + emotionData.gender?.slice(1) ||
+          emotionData.gender_guess ||
+          null
+      );
 
       console.log(`Detected emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
       if (emotionScores) {
@@ -511,6 +526,18 @@ const Index = () => {
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
 
+      // NEW: demographic info extraction (if provided)
+      setAgeGuess(
+        typeof emotionData.age === "number"
+          ? Math.round(emotionData.age)
+          : emotionData.age_guess ?? null
+      );
+      setGenderGuess(
+        emotionData.gender?.charAt(0).toUpperCase() + emotionData.gender?.slice(1) ||
+          emotionData.gender_guess ||
+          null
+      );
+
       toast({
         title: 'Photo Emotion Detected',
         description: `Detected: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}%)`
@@ -525,6 +552,46 @@ const Index = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Realtime listener for "unhappy" emotions
+  useEffect(() => {
+    const channel = supabase
+      .channel("public:emotion_logs")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "emotion_logs",
+        },
+        (payload) => {
+          const newEntry = payload.new;
+          // We only care about exits with unhappy emotions
+          if (
+            newEntry &&
+            newEntry.type === "exit" &&
+            ["angry", "sad", "disgust", "fear"].includes(newEntry.emotion)
+          ) {
+            toast({
+              title: "⚡ Unhappy Departure Detected",
+              description: `A customer left feeling ${newEntry.emotion}! Immediate attention recommended.`,
+              variant: "destructive",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Helper to reset demographic guesses
+  const resetDemographics = () => {
+    setAgeGuess(null);
+    setGenderGuess(null);
   };
 
   return (
@@ -609,6 +676,8 @@ const Index = () => {
           satisfactionResult={satisfactionResult}
           emotionScores={currentEmotionScores}
           faceBlur={faceBlur}
+          ageGuess={ageGuess}
+          genderGuess={genderGuess}
         />
       </div>
     </div>

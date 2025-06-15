@@ -1,4 +1,3 @@
-
 import React from "react";
 import EmotionDisplay from "@/components/EmotionDisplay";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -26,6 +25,8 @@ interface SidebarProps {
   satisfactionResult: SatisfactionResult | null;
   emotionScores?: Record<string, number> | null;
   emotionHistory: EmotionData[];
+  ageGuess?: number | null;
+  genderGuess?: string | null;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -35,9 +36,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   exitEmotion,
   satisfactionResult,
   emotionScores,
-  emotionHistory
+  emotionHistory,
+  ageGuess,
+  genderGuess
 }) => (
-  <div className="space-y-6">
+  <div className="space-y-4">
     <EmotionDisplay
       emotion={currentEmotion}
       confidence={emotionConfidence}
@@ -71,6 +74,30 @@ const Sidebar: React.FC<SidebarProps> = ({
         <p>• Analyze correlation between wait times and emotions</p>
       </CardContent>
     </Card>
+    {/* Demographic Estimation */}
+    <div className="bg-slate-800/60 rounded-lg px-4 py-3 border border-slate-600 space-y-1">
+      <div className="text-slate-400 text-xs mb-1 font-semibold tracking-wide uppercase">
+        Demographic Estimation
+      </div>
+      <div className="flex items-center gap-3 text-base">
+        <div className="flex flex-col text-slate-200">
+          <span>Age:</span>
+          <span className="font-semibold text-lg">
+            {ageGuess !== undefined && ageGuess !== null
+              ? ageGuess
+              : <span className="text-slate-500 italic">–</span>}
+          </span>
+        </div>
+        <div className="flex flex-col text-slate-200 ml-6">
+          <span>Gender:</span>
+          <span className="font-semibold text-lg">
+            {genderGuess
+              ? genderGuess
+              : <span className="text-slate-500 italic">–</span>}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 );
 
