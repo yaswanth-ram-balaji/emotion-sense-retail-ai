@@ -38,10 +38,20 @@ const MainHeader: React.FC<MainHeaderProps> = ({
       <BackendAlert onRetry={retryBackendConnection} />
     )}
     <div className="text-center space-y-4">
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+      <h1 className="font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent
+        text-3xl
+        sm:text-4xl
+        md:text-4xl
+        lg:text-4xl
+      ">
         Retail EmotionSense
       </h1>
-      <p className="text-slate-300 text-lg">
+      <p className="text-slate-300 
+        text-base
+        sm:text-lg
+        md:text-lg
+        lg:text-lg
+      ">
         Real-Time AI Emotion Tracking for Enhanced Customer Experience
       </p>
     </div>
@@ -50,7 +60,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
       useUpload={useUpload}
       onChange={setUseUpload}
     />
-    <div className="flex items-center gap-2 justify-end">
+    <div className="flex items-center justify-center sm:justify-end gap-2 mt-2">
       <label className="text-slate-300 text-sm flex items-center gap-2 select-none" htmlFor="face-blur-toggle">
         <input
           id="face-blur-toggle"

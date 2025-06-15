@@ -94,12 +94,19 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-slate-100">
           <Camera className="h-5 w-5" />
-          Live AI Emotion Detection
+          <span className="hidden sm:inline">Live AI Emotion Detection</span>
+          <span className="sm:hidden">AI Detection</span>
           {backendStatus === 'disconnected' && (
             <Badge variant="destructive">Offline</Badge>
           )}
           {backendStatus === 'connected' && (
-            <Badge variant="default" className="ml-2 bg-green-600">Camera Live</Badge>
+            <Badge 
+              variant="default" 
+              className="ml-0 sm:ml-2 bg-green-600 text-xs px-2 py-0.5 rounded-md whitespace-nowrap sm:text-sm"
+            >
+              <span className="hidden xs:inline">Camera Live</span>
+              <span className="xs:hidden">Live</span>
+            </Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -117,7 +124,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
                   onToggleFullscreen={() => setFullscreen(!fullscreen)}
                   faceBlur={faceBlur}
                 />
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 flex gap-2 flex-wrap">
                   <Button onClick={detectEmotionFromPhoto} disabled={isAnalyzing}>
                     Detect Emotion
                   </Button>

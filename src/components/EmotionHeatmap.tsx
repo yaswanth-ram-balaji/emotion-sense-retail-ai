@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
-// Removed import for HeatMap
 import { ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 // Group emotion logs into [hour][emotion] counts for heatmap
@@ -44,6 +43,7 @@ const EmotionHeatmap = ({ emotionHistory }) => {
   const data = useMemo(() => aggregateByHour(emotionHistory), [emotionHistory]);
   const emotions = Object.keys(emotionColors);
 
+  // Constrain height for mobile and make horizontally scrollable
   return (
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
@@ -53,8 +53,8 @@ const EmotionHeatmap = ({ emotionHistory }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="w-full overflow-x-auto pb-2">
-          <table className="w-full border-collapse text-xs">
+        <div className="w-full overflow-x-auto pb-2" style={{ maxHeight: '300px', minHeight: '100px' }}>
+          <table className="w-full border-collapse text-xs min-w-[600px]">
             <thead>
               <tr>
                 <th className="text-left pr-2 py-1">Hour</th>

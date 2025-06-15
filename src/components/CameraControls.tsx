@@ -31,11 +31,11 @@ const CameraControls: React.FC<CameraControlsProps> = ({
   exitEmotion
 }) => (
   <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-    {/* Auto Capture Control */}
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-slate-700/30 rounded-lg gap-2 sm:gap-0">
-      <div className="flex items-center gap-2 sm:gap-3">
+    {/* Auto Capture row */}
+    <div className="flex items-center justify-between p-2 sm:p-3 bg-slate-700/30 rounded-lg w-full">
+      <div className="flex items-center gap-2 sm:gap-3 w-[70%] sm:w-auto">
         {autoCapture ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-slate-400" />}
-        <span className="text-slate-200 text-xs sm:text-base">Auto AI Detection</span>
+        <span className="text-slate-200 text-xs sm:text-base whitespace-nowrap">Auto AI Detection</span>
         <Badge variant={autoCapture ? "default" : "secondary"} className="text-xs sm:text-sm px-2 py-0.5">
           {autoCapture ? "Active" : "Paused"}
         </Badge>
@@ -47,41 +47,45 @@ const CameraControls: React.FC<CameraControlsProps> = ({
         className="data-[state=checked]:bg-green-500"
       />
     </div>
-    {/* Manual Capture Buttons */}
-    <div className="flex flex-wrap gap-2 sm:gap-3">
-      <Button
-        onClick={onAnalyzeEntry}
-        disabled={isAnalyzing || backendStatus === "disconnected"}
-        className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2"
-        size="sm"
-      >
-        {isAnalyzing ? "Analyzing..." : "Capture Entry Emotion"}
-      </Button>
-      <Button
-        onClick={onAnalyzeExit}
-        disabled={isAnalyzing || backendStatus === "disconnected"}
-        className="bg-red-600 hover:bg-red-700 text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2"
-        size="sm"
-      >
-        {isAnalyzing ? "Analyzing..." : "Capture Exit Emotion"}
-      </Button>
-      <Button
-        onClick={onCompare}
-        disabled={!entryEmotion || !exitEmotion}
-        variant="outline"
-        className="border-purple-500 text-purple-400 hover:bg-purple-500/10 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
-        size="sm"
-      >
-        Compare Satisfaction
-      </Button>
-      <Button
-        onClick={onReset}
-        variant="outline"
-        className="border-slate-500 text-slate-400 hover:bg-slate-500/10 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
-        size="sm"
-      >
-        Reset Session
-      </Button>
+    {/* --- BUTTON ARRANGEMENT for mobile/tablet --- */}
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-row gap-2 w-full">
+        <Button
+          onClick={onAnalyzeEntry}
+          disabled={isAnalyzing || backendStatus === "disconnected"}
+          className="w-1/2 bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2"
+          size="sm"
+        >
+          {isAnalyzing ? "Analyzing..." : "Capture Entry Emotion"}
+        </Button>
+        <Button
+          onClick={onAnalyzeExit}
+          disabled={isAnalyzing || backendStatus === "disconnected"}
+          className="w-1/2 bg-red-600 hover:bg-red-700 text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2"
+          size="sm"
+        >
+          {isAnalyzing ? "Analyzing..." : "Capture Exit Emotion"}
+        </Button>
+      </div>
+      <div className="flex flex-row gap-2 w-full">
+        <Button
+          onClick={onCompare}
+          disabled={!entryEmotion || !exitEmotion}
+          variant="outline"
+          className="w-1/2 border-purple-500 text-purple-400 hover:bg-purple-500/10 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+          size="sm"
+        >
+          Compare Satisfaction
+        </Button>
+        <Button
+          onClick={onReset}
+          variant="outline"
+          className="w-1/2 border-slate-500 text-slate-400 hover:bg-slate-500/10 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+          size="sm"
+        >
+          Reset Session
+        </Button>
+      </div>
     </div>
   </div>
 );
