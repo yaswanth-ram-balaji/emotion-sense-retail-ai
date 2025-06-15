@@ -1,11 +1,8 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
-const SidebarInsightsCard = () => (
-  <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+const SidebarInsightsCard = () => <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
+      <CardTitle className="text-base text-slate-200 font-bold sm:text-xl">
         Actionable AI Superpowers
       </CardTitle>
     </CardHeader>
@@ -15,7 +12,5 @@ const SidebarInsightsCard = () => (
       <p>• Implement immediate follow-up for dissatisfied customers</p>
       <p>• Analyze correlation between wait times and emotions</p>
     </CardContent>
-  </Card>
-);
-
+  </Card>;
 export default SidebarInsightsCard;
