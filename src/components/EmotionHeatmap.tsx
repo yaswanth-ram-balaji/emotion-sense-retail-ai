@@ -2,7 +2,8 @@
 import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
-import { ResponsiveContainer, HeatMap, XAxis, YAxis, Tooltip } from 'recharts';
+// Removed import for HeatMap
+import { ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 // Group emotion logs into [hour][emotion] counts for heatmap
 function aggregateByHour(emotionHistory) {
@@ -23,7 +24,7 @@ function aggregateByHour(emotionHistory) {
   });
   // Prepare recharts data: [{ hour: '00', happy: 0, sad: 3, ... }]
   return Object.entries(hourMap).map(([hour, counts]) => ({
-    hour: hour.padStart(2, '0'),
+    hour: hour.toString().padStart(2, '0'),
     ...counts,
   }));
 }
@@ -85,7 +86,9 @@ const EmotionHeatmap = ({ emotionHistory }) => {
               ))}
             </tbody>
           </table>
-          <div className="pt-2 text-slate-400 text-xs">Each cell shows the number of detected customer emotions per hour (last 50 sessions).</div>
+          <div className="pt-2 text-slate-400 text-xs">
+            Each cell shows the number of detected customer emotions per hour (last 50 sessions).
+          </div>
         </div>
       </CardContent>
     </Card>
