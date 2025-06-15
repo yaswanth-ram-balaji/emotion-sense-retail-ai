@@ -1,9 +1,12 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart3, Users, TrendingUp, Download } from "lucide-react";
+import { BarChart3, Users, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmotionChart from "@/components/EmotionChart";
 import EmotionHeatmap from "./EmotionHeatmap";
+import { Button } from "@/components/ui/button";
+import { FileCsv, FileJson } from "lucide-react";
 
 interface AnalyticsDashboardProps {
   emotionHistory: any[];
@@ -54,25 +57,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   backendStatus
 }) => (
   <div className="space-y-6">
-    {/* Export buttons area at the top */}
-    <div className="flex flex-wrap items-center gap-3 justify-end mb-2">
-      <button
-        className="flex items-center gap-1 px-3 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition text-sm shadow"
-        title="Export emotion history as CSV"
-        onClick={() => downloadCSV(emotionHistory, "emotion-history.csv")}
-        disabled={!emotionHistory.length}
-      >
-        <Download className="w-4 h-4" /> Export CSV
-      </button>
-      <button
-        className="flex items-center gap-1 px-3 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition text-sm shadow"
-        title="Export emotion history as JSON"
-        onClick={() => downloadJSON(emotionHistory, "emotion-history.json")}
-        disabled={!emotionHistory.length}
-      >
-        <Download className="w-4 h-4" /> Export JSON
-      </button>
-    </div>
+    {/* Analytics/heatmap/cards */}
     <EmotionHeatmap emotionHistory={emotionHistory} />
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
@@ -177,7 +162,29 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </CardContent>
       </Card>
     </div>
+    {/* Export buttons area AT THE BOTTOM, mobile friendly */}
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end items-stretch mt-4 pb-1">
+      <Button
+        variant="secondary"
+        className="flex-1 sm:flex-initial flex items-center justify-center"
+        title="Export emotion history as CSV"
+        onClick={() => downloadCSV(emotionHistory, "emotion-history.csv")}
+        disabled={!emotionHistory.length}
+      >
+        <FileCsv className="mr-2" /> Export CSV
+      </Button>
+      <Button
+        variant="secondary"
+        className="flex-1 sm:flex-initial flex items-center justify-center"
+        title="Export emotion history as JSON"
+        onClick={() => downloadJSON(emotionHistory, "emotion-history.json")}
+        disabled={!emotionHistory.length}
+      >
+        <FileJson className="mr-2" /> Export JSON
+      </Button>
+    </div>
   </div>
 );
 
 export default AnalyticsDashboard;
+
