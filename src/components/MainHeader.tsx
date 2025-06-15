@@ -1,5 +1,5 @@
+
 import React from "react";
-import HeaderBanner from "@/components/HeaderBanner";
 import BackendAlert from "@/components/BackendAlert";
 import AlertSection from "@/components/AlertSection";
 import ModeToggle from "@/components/ModeToggle";
@@ -32,9 +32,8 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         <img alt="EmotionSense Logo" className="w-10 h-10 rounded-full border-2 border-purple-400 shadow-sm" src="/lovable-uploads/b9d2ea2e-cc3e-4fc4-b6c3-3ce8921aa796.jpg" />
         <span className="font-extrabold tracking-tight sm:text-2xl bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent font-sans text-base">Auto  AI-Emotion Detect</span>
       </div>
-      {/* Model selector, banner, backend alerts can still go here */}
+      {/* Backend alert if disconnected */}
       <div className="flex-1">
-        <HeaderBanner backendStatus={backendStatus} selectedModel={selectedModel} onModelChange={onModelChange} />
         {backendStatus === "disconnected" && <BackendAlert onRetry={retryBackendConnection} />}
       </div>
     </div>
