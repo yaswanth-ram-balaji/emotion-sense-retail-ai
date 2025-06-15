@@ -1,3 +1,4 @@
+
 import React from "react";
 import MainHeader from "@/components/MainHeader";
 import CameraPanel from "@/components/CameraPanel";
@@ -53,7 +54,6 @@ const Index = () => {
           setFaceBlur={emotion.setFaceBlur}
           retryBackendConnection={emotion.retryBackendConnection}
         />
-
         {/* 1. Live AI Emotion Detection */}
         <GradientSection>
           <CameraPanel
@@ -94,9 +94,6 @@ const Index = () => {
             entryEmotion={emotion.entryEmotion}
             exitEmotion={emotion.exitEmotion}
             satisfactionResult={emotion.satisfactionResult}
-            getEmotionEmoji={emotion.getEmotionEmoji}
-            getEmotionColor={emotion.getEmotionColor}
-            getSatisfactionColor={emotion.getSatisfactionColor}
           />
         </GradientSection>
         {/* 4. Emotion Metrics */}
@@ -163,3 +160,4 @@ const Index = () => {
 };
 
 export default Index;
+
