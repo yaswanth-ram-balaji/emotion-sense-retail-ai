@@ -35,14 +35,36 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ backendStatus, selectedMode
       <div className="flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
         <span className="text-blue-100 text-xs sm:text-sm whitespace-nowrap">Model:</span>
         <Select value={selectedModel} onValueChange={onModelChange}>
-          <SelectTrigger className="w-full sm:w-[120px] bg-slate-900 border-blue-400 text-xs sm:text-sm h-8 sm:h-10">
+          <SelectTrigger 
+            className="
+              w-full sm:w-[140px]
+              bg-gradient-to-r from-blue-800 via-purple-800 to-blue-800
+              border border-purple-400 focus:border-purple-500 shadow
+              text-xs sm:text-sm h-8 sm:h-10
+              text-purple-200 font-semibold
+              hover:from-purple-900 hover:to-blue-900 hover:text-purple-100
+              transition-colors duration-200
+              outline-none ring-2 ring-transparent focus:ring-purple-500
+              "
+          >
             <SelectValue>
               {emotionModels.find(m => m.value === selectedModel)?.label}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {emotionModels.map((m) => (
-              <SelectItem key={m.value} value={m.value} className="text-xs sm:text-sm">{m.label}</SelectItem>
+              <SelectItem 
+                key={m.value} 
+                value={m.value} 
+                className="
+                  text-xs sm:text-sm
+                  hover:bg-purple-700 focus:bg-purple-700
+                  focus:text-white
+                  transition-colors
+                  "
+              >
+                {m.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -51,3 +73,4 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ backendStatus, selectedMode
   </div>
 );
 export default HeaderBanner;
+
