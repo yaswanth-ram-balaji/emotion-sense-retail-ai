@@ -47,10 +47,14 @@ const MainHeader: React.FC<MainHeaderProps> = ({
   retryBackendConnection
 }) => (
   <div className="relative">
-    {/* --- Top-right backend status dot --- */}
+    {/* --- Top-right backend status dot, moved further in mobile view --- */}
     <span
       className={`
-        absolute top-3 right-3 z-50
+        absolute 
+        ${/* On small screens, move closer to true top-right; on desktop, keep more standard spacing */""}
+        top-1 right-2
+        sm:top-3 sm:right-3
+        z-50
         w-4 h-4 rounded-full border-2 border-slate-900 shadow-lg
         ${getBackendDotColor(backendStatus)}
       `}
@@ -72,7 +76,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 
     {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
     <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
-      {/* Camera/Upload Segmented Toggle - UPDATED */}
+      {/* Camera/Upload Segmented Toggle */}
       <ModeSegmentedButton
         value={useUpload ? "upload" : "camera"}
         onChange={v => setUseUpload(v === "upload")}
@@ -89,13 +93,14 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         </label>
       </div>
 
-      {/* Model Selector */}
+      {/* Model Selector (Updated Style) */}
       <div className="min-w-[140px] mx-0">
         <Select value={selectedModel} onValueChange={onModelChange}>
           <SelectTrigger className="
-            h-9 rounded-lg px-4 bg-gradient-to-r from-purple-700 via-fuchsia-600 to-blue-700 text-purple-50
-            font-bold shadow-md border-2 border-purple-400/90 ring-2 ring-blue-900/30
-            hover:from-indigo-800 hover:to-pink-800 transition-all uppercase text-xs
+            h-9 px-6 rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-indigo-600
+            text-white font-bold border-2 border-purple-300 ring-2 ring-blue-900/30 shadow-[0_2px_16px_rgba(120,43,255,0.16)]
+            transition-all hover:scale-105 hover:from-indigo-700 hover:to-pink-600
+            uppercase text-xs tracking-wide outline-none focus-visible:ring-2 focus-visible:ring-pink-400
           ">
             <span>
               {selectedModel ? emotionModels.find(m => m.value === selectedModel)?.label : "Select Model"}
@@ -103,8 +108,8 @@ const MainHeader: React.FC<MainHeaderProps> = ({
           </SelectTrigger>
           <SelectContent className="bg-violet-950/95 rounded-lg shadow-2xl border-2 border-violet-800 z-[70]">
             {emotionModels.map(m => <SelectItem key={m.value} value={m.value} className="text-xs hover:bg-purple-700 focus:bg-purple-700 focus:text-white">
-                {m.label}
-              </SelectItem>)}
+              {m.label}
+            </SelectItem>)}
           </SelectContent>
         </Select>
       </div>
