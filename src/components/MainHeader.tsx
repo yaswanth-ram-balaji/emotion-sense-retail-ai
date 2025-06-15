@@ -5,7 +5,7 @@ import AlertSection from "@/components/AlertSection";
 import ModeToggle from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Shield } from "lucide-react";
+import { Camera, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface MainHeaderProps {
@@ -24,6 +24,13 @@ const emotionModels = [
   { label: "DeepFace", value: "deepface" },
   { label: "FER+ (HuggingFace)", value: "huggingface" }
 ];
+
+// Helper for backend dot color
+const getBackendDotColor = (status: string) => {
+  if (status === "connected") return "bg-green-500";
+  if (status === "disconnected") return "bg-red-500";
+  return "bg-yellow-400 animate-pulse";
+};
 
 const MainHeader: React.FC<MainHeaderProps> = ({
   backendStatus,
@@ -51,6 +58,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         {backendStatus === "disconnected" && <BackendAlert onRetry={retryBackendConnection} />}
       </div>
     </div>
+
     {/* --- Title and Tagline --- */}
     <div className="text-center space-y-2 sm:space-y-3 my-2">
       <h1 className="font-extrabold font-sans tracking-tighter bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent text-2xl sm:text-3xl md:text-4xl lg:text-4xl transition-all duration-200">
@@ -61,112 +69,78 @@ const MainHeader: React.FC<MainHeaderProps> = ({
       </p>
     </div>
 
-    {/* --- Responsive Stylish Single-Line Control Panel --- */}
-    <div className="w-full flex flex-nowrap overflow-x-auto items-center justify-center gap-3 sm:gap-4 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
-      
-      {/* Camera Mode Button */}
-      <Button
-        variant="ghost"
-        size="lg"
-        onClick={() => setUseUpload(false)}
-        className={`
-          min-w-[100px] rounded-xl font-bold uppercase
-          shadow-lg border-2 border-green-400
-          ${!useUpload 
-            ? 'bg-gradient-to-r from-green-500 via-lime-400 to-teal-400 text-white scale-105 ring-2 ring-green-200 animate-pulse' 
-            : 'bg-none hover:bg-green-400/20 text-green-200'}
-          transition-all
-        `}
-      >
-        Camera Mode
-      </Button>
+    {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
+    <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
 
-      {/* Upload Photo Button */}
+      {/* Camera/Upload Mode Toggle */}
       <Button
-        variant="ghost"
-        size="lg"
-        onClick={() => setUseUpload(true)}
+        variant={useUpload ? "secondary" : "default"}
         className={`
-          min-w-[120px] rounded-xl font-bold uppercase
-          shadow-lg border-2 border-pink-400
+          flex items-center gap-1 px-4 py-2 rounded-lg font-bold uppercase transition
+          border-2
           ${useUpload 
-            ? 'bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 text-white scale-105 ring-2 ring-pink-200 animate-pulse'
-            : 'bg-none hover:bg-pink-500/20 text-pink-200'}
-          transition-all
+            ? 'border-pink-400 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 text-white'
+            : 'border-green-400 bg-gradient-to-r from-green-500 via-lime-400 to-teal-400 text-white'}
+          shadow-md
         `}
+        onClick={() => setUseUpload(!useUpload)}
       >
-        Upload Photo
+        {useUpload ? (
+          <>
+            <Upload className="w-5 h-5 mr-1" /> Upload Photo
+          </>
+        ) : (
+          <>
+            <Camera className="w-5 h-5 mr-1" /> Camera Mode
+          </>
+        )}
       </Button>
 
-      {/* Face Blur Toggle Button */}
-      <Button
-        variant="ghost"
-        size="lg"
-        type="button"
-        tabIndex={-1}
-        className={
-          `
-          flex items-center min-w-[120px] gap-2 !p-0 bg-none rounded-xl 
-          font-bold uppercase shadow-lg border-2 border-violet-400
-          ${faceBlur
-            ? 'bg-gradient-to-r from-violet-500 via-pink-400 to-indigo-500 text-white scale-105 ring-2 ring-violet-200 animate-pulse'
-            : 'hover:bg-violet-500/20 text-violet-200'}
-          transition-all
-          `
-        }
-        aria-disabled
-      >
+      {/* Face Blur Toggle Minimal */}
+      <div className="flex items-center gap-1 bg-violet-800/20 border border-violet-500 rounded-lg px-3 py-1.5 shadow-sm">
         <Switch
           id="face-blur-toggle"
           checked={faceBlur}
           onCheckedChange={setFaceBlur}
-          className={`mx-2 ${faceBlur ? "data-[state=checked]:bg-pink-400/80" : ""}`}
+          className="data-[state=checked]:bg-pink-400/80 scale-90"
         />
         <label
           htmlFor="face-blur-toggle"
-          className={
-            `text-xs select-none tracking-wide font-extrabold uppercase
-            ${faceBlur ? "text-pink-100" : "text-violet-200"}`
-          }
+          className={`
+            ml-1 text-xs tracking-wide font-extrabold uppercase select-none
+            ${faceBlur ? "text-pink-200" : "text-violet-200"}
+          `}
         >
           Face Blur
         </label>
-      </Button>
+      </div>
 
-      {/* Backend Status */}
-      <Button
-        variant="ghost"
-        size="lg"
-        tabIndex={-1}
-        className={`
-          flex items-center min-w-[140px] gap-2 px-4 py-2 rounded-xl font-bold shadow-lg border-2 border-blue-400
-          ${backendStatus === "connected"
-            ? "bg-gradient-to-r from-blue-500 via-green-400 to-cyan-400 text-white ring-2 ring-blue-200 animate-pulse"
-            : backendStatus === "checking"
-              ? "bg-gradient-to-r from-yellow-400 via-orange-300 to-amber-400 text-black animate-pulse"
-              : "bg-gradient-to-r from-red-500 via-pink-500 to-pink-700 text-white"}
-          pointer-events-none !cursor-default transition-all
-        `}
-        style={{ minWidth: 156 }}
-      >
-        <Shield size={18} className="inline mr-2" />
-        <span className="tracking-wider text-xs sm:text-sm font-bold">
+      {/* Backend Status: just dot + text */}
+      <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 min-w-[110px] shadow-sm">
+        <span
+          className={`
+            inline-block w-3 h-3 rounded-full
+            ${getBackendDotColor(backendStatus)}
+          `}
+        />
+        <span className="text-xs font-semibold"
+          style={{color: backendStatus==="connected" ? "#22c55e" : backendStatus==="disconnected" ? "#f87171" : "#facc15"}}>
           {backendStatus === "checking"
-            ? "Checking Backend..."
-            : `Backend: ${backendStatus.charAt(0).toUpperCase() + backendStatus.slice(1)}`
+            ? "Checking..."
+            : backendStatus === "connected"
+              ? "Backend Connected"
+              : "Not Connected"
           }
         </span>
-      </Button>
+      </div>
 
       {/* Model Selector */}
-      <div className="min-w-[160px]">
+      <div className="min-w-[140px] mx-0">
         <Select value={selectedModel} onValueChange={onModelChange}>
           <SelectTrigger className="
-            h-10 rounded-xl px-4
-            bg-gradient-to-r from-purple-700 via-fuchsia-600 to-blue-700 text-purple-50
-            font-bold shadow-lg border-2 border-purple-400/90 ring-2 ring-blue-900/30
-            hover:from-indigo-800 hover:to-pink-800 transition-all uppercase
-            text-xs
+            h-9 rounded-lg px-4 bg-gradient-to-r from-purple-700 via-fuchsia-600 to-blue-700 text-purple-50
+            font-bold shadow-md border-2 border-purple-400/90 ring-2 ring-blue-900/30
+            hover:from-indigo-800 hover:to-pink-800 transition-all uppercase text-xs
           ">
             <span>
               {selectedModel ? emotionModels.find(m => m.value === selectedModel)?.label : "Select Model"}
