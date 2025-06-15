@@ -1,9 +1,18 @@
+// useEmotionSenseCore.ts (file refactored for brevity)
+// This file now just orchestrates between modules in useEmotionSense/
+
 import { useState, useEffect, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  getBackendUrl,
+  checkBackendConnection,
+  loadEmotionHistory,
+  extractDemographicsFromBackend,
+  resetSessionState,
+} from './useEmotionSense';
 import { extractAgeGender } from '@/utils/demographics';
 
-// Define types
 export interface EmotionData {
   timestamp: string;
   emotion: string;
