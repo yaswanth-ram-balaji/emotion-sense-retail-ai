@@ -4,6 +4,7 @@ import BackendAlert from "@/components/BackendAlert";
 import AlertSection from "@/components/AlertSection";
 import ModeToggle from "@/components/ModeToggle";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Shield } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -57,73 +58,128 @@ const MainHeader: React.FC<MainHeaderProps> = ({
       </p>
     </div>
 
-    {/* Control Panel Area */}
-    <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 py-3 px-2 sm:px-4 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-lg mb-2 mt-4 animate-fade-in">
-      {/* Camera Mode + Upload */}
-      <div className="flex flex-row items-center justify-center bg-slate-900/80 rounded-xl px-2 py-1 gap-2 shadow border border-violet-500/30">
-        <button
-          className={`px-3 py-1 rounded-lg font-bold text-xs sm:text-sm transition-all min-w-[96px]
-            ${!useUpload ? 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white shadow-lg scale-105' :
-            'bg-slate-800/80 text-purple-100 border border-purple-600/20 hover:bg-purple-800/50'}`}
+    {/* --- Stylish Control Panel --- */}
+    <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-4 py-3 px-2 sm:px-4 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-lg mb-2 mt-4 animate-fade-in">
+      {/* Camera/Upload Buttons */}
+      <div className="flex gap-2 bg-white/5 dark:bg-slate-900/80 px-3 py-2 rounded-2xl shadow-lg border border-violet-400/30">
+        <Button
+          variant={useUpload ? "ghost" : "default"}
+          size="lg"
           onClick={() => setUseUpload(false)}
-          aria-pressed={!useUpload}
+          className={
+            `
+            font-bold uppercase transition-all min-w-[110px]
+            rounded-xl shadow 
+            bg-gradient-to-r 
+            ${
+              useUpload
+                ? "from-slate-800/50 via-slate-900 to-purple-900 text-purple-100 hover:from-purple-800 hover:via-purple-900 hover:to-slate-900"
+                : "from-green-500 via-blue-500 to-purple-500 text-white ring-2 ring-purple-400 scale-105 shadow-lg hover:from-green-600 hover:to-indigo-600"
+            }
+            border-0
+            `
+          }
         >
           Camera Mode
-        </button>
-        <button
-          className={`px-3 py-1 rounded-lg font-bold text-xs sm:text-sm transition-all min-w-[96px]
-            ${useUpload ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white shadow-lg scale-105' :
-            'bg-slate-800/80 text-purple-100 border border-purple-600/20 hover:bg-pink-800/40'}`}
+        </Button>
+        <Button
+          variant={useUpload ? "default" : "ghost"}
+          size="lg"
           onClick={() => setUseUpload(true)}
-          aria-pressed={useUpload}
+          className={
+            `
+            font-bold uppercase transition-all min-w-[110px]
+            rounded-xl shadow
+            bg-gradient-to-r 
+            ${
+              useUpload
+                ? "from-pink-500 via-purple-500 to-blue-500 text-white ring-2 ring-pink-300 scale-105 shadow-lg hover:from-pink-600 hover:to-blue-600"
+                : "from-slate-800/50 via-slate-900 to-blue-800 text-purple-100 hover:from-blue-800 hover:to-pink-700"
+            }
+            border-0
+            `
+          }
         >
           Upload Photo
-        </button>
+        </Button>
       </div>
-      {/* Face blur toggle */}
-      <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/70 rounded-xl shadow border border-violet-500/20 min-w-[130px]">
-        <Switch
-          id="face-blur-toggle"
-          checked={faceBlur}
-          onCheckedChange={setFaceBlur}
-          className={`mr-1 ${faceBlur ? 'data-[state=checked]:bg-pink-600' : ''}`}
-        />
-        <label
-          htmlFor="face-blur-toggle"
-          className={`text-xs sm:text-sm select-none font-semibold 
-            ${faceBlur ? "text-pink-300" : "text-slate-300"}
-            transition-colors`}
+
+      {/* Face Blur Toggle */}
+      <div className={`flex items-center gap-2 px-3 py-2 bg-white/5 dark:bg-slate-900/70 rounded-2xl shadow-lg border border-pink-400/30
+          ${faceBlur ? "ring-2 ring-pink-400" : ""}
+        `}
+      >
+        <Button
+          variant="ghost"
+          size="lg"
+          type="button"
+          tabIndex={-1}
+          className="
+            !p-0 !m-0 flex items-center bg-none hover:bg-none border-0 focus:ring-0 
+            active:scale-100
+            group
+            "
+          aria-disabled
         >
-          Face Blur
-        </label>
-      </div>
-      {/* Backend Status */}
-      <div className="flex items-center gap-1 px-3 py-1 bg-slate-900/70 rounded-xl shadow border border-violet-500/20">
-        <Badge
-          variant={backendStatus === 'connected' ? 'default' : 'destructive'}
-          className={`flex items-center gap-1 rounded-lg px-3 py-1 shadow-sm ring-2 
-            ${
-              backendStatus === 'connected'
-                ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white animate-pulse'
-                : backendStatus === 'checking'
-                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black'
-                  : 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
+          <Switch
+            id="face-blur-toggle"
+            checked={faceBlur}
+            onCheckedChange={setFaceBlur}
+            className={`mr-2 group-focus:ring-0 ${faceBlur ? "data-[state=checked]:bg-pink-400/80" : ""}`}
+          />
+          <label
+            htmlFor="face-blur-toggle"
+            className={
+              `text-xs sm:text-sm select-none font-semibold transition-colors tracking-wide
+              ${faceBlur ? "text-pink-300" : "text-slate-100"}`
             }
-          `}
-          style={{ fontSize: '0.78rem', letterSpacing: '0.04em', fontWeight: 700, boxShadow: "0 2px 7px rgba(0,0,0,0.13)" }}
-        >
-          <Shield size={15} className="inline mr-1" />
-          {backendStatus === 'checking'
-            ? (<span>Backend: <span className="animate-pulse">Checking...</span></span>)
-            : (<span>Backend: {backendStatus.charAt(0).toUpperCase() + backendStatus.slice(1)}</span>)
-          }
-        </Badge>
+          >
+            Face Blur
+          </label>
+        </Button>
       </div>
+
+      {/* Backend Status Badge (styled as button-like pill) */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-white/5 dark:bg-slate-900/70 rounded-2xl shadow-lg border border-blue-400/30">
+        <Button
+          variant="ghost"
+          size="lg"
+          tabIndex={-1}
+          className={`
+            py-1 pr-2 pl-1 rounded-xl shadow-sm pointer-events-none !cursor-default font-semibold flex items-center gap-2
+            ${
+              backendStatus === "connected"
+                ? "from-green-400/90 to-blue-500/90 bg-gradient-to-r text-white ring-2 ring-blue-200/40 animate-pulse"
+                : backendStatus === "checking"
+                  ? "from-yellow-300/80 to-yellow-500/90 bg-gradient-to-r text-black animate-pulse"
+                  : "from-red-500/90 to-pink-500/90 bg-gradient-to-r text-white"
+            }
+            border-0
+          `}
+          style={{ minWidth: 156 }}
+        >
+          <Shield size={17} className="inline mr-1" />
+          <span className="tracking-wide text-sm font-bold">
+            {backendStatus === "checking"
+              ? "Backend: Checking..."
+              : `Backend: ${backendStatus.charAt(0).toUpperCase() + backendStatus.slice(1)}`
+            }
+          </span>
+        </Button>
+      </div>
+
       {/* Model Selector */}
-      <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/70 rounded-xl shadow border border-violet-500/20 min-w-[145px]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-white/5 dark:bg-slate-900/70 rounded-2xl shadow-lg border border-purple-400/30">
         <span className="font-bold text-xs text-purple-100">Model</span>
         <Select value={selectedModel} onValueChange={onModelChange}>
-          <SelectTrigger className="w-[120px] h-8 rounded-lg px-2 bg-gradient-to-r from-purple-800 to-indigo-800 border-2 border-purple-400 text-xs text-purple-50 ring-2 ring-purple-800/30 shadow font-bold hover:from-pink-900 hover:to-purple-900 transition">
+          <SelectTrigger className="
+            w-[135px] h-10 rounded-lg px-2 
+            bg-gradient-to-r from-purple-700 via-violet-600 to-blue-700 text-purple-50
+            text-xs font-bold shadow 
+            border-0 ring-2 ring-purple-800/50 transition
+            focus:ring-2
+            hover:from-indigo-800 hover:to-pink-800
+          ">
             <span>
               {selectedModel ? emotionModels.find(m => m.value === selectedModel)?.label : "Select Model"}
             </span>
@@ -144,3 +200,4 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 );
 
 export default MainHeader;
+
