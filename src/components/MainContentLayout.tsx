@@ -382,7 +382,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           faceBlur={faceBlur}
           cameraVideoRef={cameraVideoRef}
         />
-        <LiveAIDetectionCard />
         <div>
           <span className="block text-lg sm:text-2xl font-semibold text-slate-200 mb-2">
             Customer Journey Map
