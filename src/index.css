@@ -4,6 +4,11 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
+/* Use 'Inter' font everywhere for a modern look. */
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
