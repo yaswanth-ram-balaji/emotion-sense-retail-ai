@@ -145,14 +145,29 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   const isMobile = window.matchMedia("(max-width: 1023px)").matches;
   if (isMobile) {
     return <div className="flex flex-col gap-5">
-      {/* 1. Live AI Emotion Detection with backend/model controls */}
+      {/* 1. Live AI Emotion Detection WITHOUT backend/model controls */}
       <div>
-        <LiveAIDetectionCard
+        <LiveAIDetectionCard />
+        <CameraPanel 
+          useUpload={useUpload}
+          fullscreen={fullscreen}
+          setFullscreen={setFullscreen}
+          photoUrl={photoUrl}
+          setPhotoUrl={setPhotoUrl}
+          detectEmotionFromPhoto={detectEmotionFromPhoto}
+          isAnalyzing={isAnalyzing}
           backendStatus={backendStatus}
-          selectedModel={selectedModel}
-          onModelChange={onModelChange}
+          autoCapture={autoCapture}
+          onAutoCaptureChange={onAutoCaptureChange}
+          onAnalyzeEntry={onAnalyzeEntry}
+          onAnalyzeExit={onAnalyzeExit}
+          onCompare={onCompare}
+          onReset={onReset}
+          entryEmotion={entryEmotion}
+          exitEmotion={exitEmotion}
+          faceBlur={faceBlur}
+          cameraVideoRef={cameraVideoRef}
         />
-        <CameraPanel useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
       </div>
       {/* 2. Live AI Detection real-time values */}
       <div className="pt-1">
@@ -199,12 +214,28 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   // Desktop/tablet version
   return <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-2 space-y-6">
-      <LiveAIDetectionCard
+      {/* 1. Live AI Emotion Detection without props */}
+      <LiveAIDetectionCard />
+      <CameraPanel 
+        useUpload={useUpload}
+        fullscreen={fullscreen}
+        setFullscreen={setFullscreen}
+        photoUrl={photoUrl}
+        setPhotoUrl={setPhotoUrl}
+        detectEmotionFromPhoto={detectEmotionFromPhoto}
+        isAnalyzing={isAnalyzing}
         backendStatus={backendStatus}
-        selectedModel={selectedModel}
-        onModelChange={onModelChange}
+        autoCapture={autoCapture}
+        onAutoCaptureChange={onAutoCaptureChange}
+        onAnalyzeEntry={onAnalyzeEntry}
+        onAnalyzeExit={onAnalyzeExit}
+        onCompare={onCompare}
+        onReset={onReset}
+        entryEmotion={entryEmotion}
+        exitEmotion={exitEmotion}
+        faceBlur={faceBlur}
+        cameraVideoRef={cameraVideoRef}
       />
-      <CameraPanel useUpload={useUpload} fullscreen={fullscreen} setFullscreen={setFullscreen} photoUrl={photoUrl} setPhotoUrl={setPhotoUrl} detectEmotionFromPhoto={detectEmotionFromPhoto} isAnalyzing={isAnalyzing} backendStatus={backendStatus} autoCapture={autoCapture} onAutoCaptureChange={onAutoCaptureChange} onAnalyzeEntry={onAnalyzeEntry} onAnalyzeExit={onAnalyzeExit} onCompare={onCompare} onReset={onReset} entryEmotion={entryEmotion} exitEmotion={exitEmotion} faceBlur={faceBlur} cameraVideoRef={cameraVideoRef} />
       <div className="mt-2 flex items-center gap-2 mb-1">
         
       </div>
