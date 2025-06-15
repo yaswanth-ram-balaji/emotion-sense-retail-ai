@@ -335,7 +335,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
     );
   }
 
-  // Default desktop grid layout (unchanged)
+  // Updated desktop/tablet grid layout: Live AI Detection above Customer Journey
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
@@ -359,12 +359,9 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           faceBlur={faceBlur}
           cameraVideoRef={cameraVideoRef}
         />
-        <AnalyticsDashboard
-          emotionHistory={emotionHistory}
-          unhappyCount={unhappyCount}
-          autoCapture={autoCapture}
-          backendStatus={backendStatus}
-        />
+        {/* Live AI Detection on desktop/tablet just like mobile */}
+        <LiveAIDetectionCard />
+        {/* Customer Journey immediately after Live AI Detection */}
         <JourneyTracking
           entryEmotion={entryEmotion}
           exitEmotion={exitEmotion}
@@ -372,6 +369,13 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           getEmotionEmoji={getEmotionEmoji}
           getEmotionColor={getEmotionColor}
           getSatisfactionColor={getSatisfactionColor}
+        />
+        {/* AnalyticsDashboard (remaining card group) */}
+        <AnalyticsDashboard
+          emotionHistory={emotionHistory}
+          unhappyCount={unhappyCount}
+          autoCapture={autoCapture}
+          backendStatus={backendStatus}
         />
       </div>
       <Sidebar
