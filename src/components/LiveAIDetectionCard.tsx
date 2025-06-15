@@ -4,23 +4,22 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { LineChart, Target } from "lucide-react";
 
 const LiveAIDetectionCard: React.FC = () => (
-  <Card className="bg-violet-800/80 border-0 rounded-xl px-2 py-6 flex flex-col items-center text-center shadow">
+  <Card className="bg-violet-800/80 border-0 rounded-xl px-2 py-4 sm:px-2 sm:py-6 flex flex-col items-center text-center shadow">
     <CardHeader className="pb-2">
-      <CardTitle className="flex items-center gap-2 text-white text-xl">
-        <LineChart className="h-6 w-6 text-white" />
+      <CardTitle className="flex items-center gap-2 text-white text-base sm:text-xl">
+        <LineChart className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
         Live AI Detection
       </CardTitle>
     </CardHeader>
     <CardContent className="flex flex-col items-center pt-0">
-      <Target className="h-14 w-14 text-pink-300 mx-auto mb-2" />
-      <div className="text-slate-50 text-lg font-medium mb-1">
+      <Target className="h-10 w-10 sm:h-14 sm:w-14 text-pink-300 mx-auto mb-1 sm:mb-2" />
+      <div className="text-slate-50 text-base sm:text-lg font-medium mb-0.5 sm:mb-1">
         No emotion detected
       </div>
-      <div className="text-slate-300 text-sm">
+      <div className="text-slate-300 text-xs sm:text-sm">
         Enable auto-detection or capture manually
       </div>
     </CardContent>
   </Card>
 );
-
 export default LiveAIDetectionCard;
