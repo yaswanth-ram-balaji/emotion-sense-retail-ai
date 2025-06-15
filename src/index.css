@@ -101,3 +101,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* === THEME PRESETS === */
+.theme-classic {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  /* (same as :root) */
+}
+
+.theme-dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 6%;
+  --primary: 217.2 91.2% 59.8%;
+  --secondary: 217.2 32.6% 17.5%;
+}
+.theme-soft {
+  --background: 223 60% 95%;
+  --foreground: 216 55% 30%;
+  --primary: 255 92% 80%;
+  --card: 0 0% 100%;
+  --secondary: 204 80% 88%;
+}
+
+.theme-vibrant {
+  --background: 48 94% 83%;
+  --foreground: 310 80% 7%;
+  --primary: 340 82% 60%;
+  --accent: 48 100% 50%;
+  --card: 192 96% 90%;
+}
+
+.theme-futuristic {
+  --background: 230 29% 12%;
+  --foreground: 162 68% 88%;
+  --primary: 193 75% 55%;
+  --card: 240 12% 18%;
+  --accent: 306 92% 50%;
+  --secondary: 240 11% 23%;
+}
