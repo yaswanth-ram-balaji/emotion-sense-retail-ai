@@ -47,7 +47,6 @@ const Index = () => {
   const [satisfactionResult, setSatisfactionResult] = useState<SatisfactionResult | null>(null);
   const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [privacyOptOut, setPrivacyOptOut] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
   const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
@@ -95,7 +94,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (autoCapture && !privacyOptOut && backendStatus === 'connected') {
+    if (autoCapture && backendStatus === 'connected') {
       intervalRef.current = setInterval(() => {
         detectCurrentEmotion();
       }, 3000);
@@ -111,7 +110,7 @@ const Index = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [autoCapture, privacyOptOut, backendStatus]);
+  }, [autoCapture, backendStatus]);
 
   useEffect(() => {
     checkBackendConnection();
@@ -160,7 +159,7 @@ const Index = () => {
   };
 
   const detectCurrentEmotion = async () => {
-    if (privacyOptOut || isAnalyzing || backendStatus !== 'connected') return;
+    if (isAnalyzing || backendStatus !== 'connected') return;
 
     setIsAnalyzing(true);
 
@@ -249,15 +248,6 @@ const Index = () => {
   };
 
   const analyzeEmotion = async (type: 'entry' | 'exit') => {
-    if (privacyOptOut) {
-      toast({
-        title: "Privacy Mode Active",
-        description: "Emotion analysis is disabled. Toggle privacy settings to enable.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (backendStatus === 'disconnected') {
       toast({
         title: "Backend Not Available",
@@ -547,7 +537,7 @@ const Index = () => {
             </Badge>
           </div>
           <div className="flex items-center gap-3">
-            {/* NEW: Model Selector */}
+            {/* Model Selector (remains) */}
             <span className="text-blue-100 text-sm">Model:</span>
             <Select value={selectedModel} onValueChange={val => setSelectedModel(val)}>
               <SelectTrigger className="w-[120px] bg-slate-900 border-blue-400">
@@ -559,12 +549,7 @@ const Index = () => {
                 ))}
               </SelectContent>
             </Select>
-            <span className="text-blue-100 text-sm">Opt out of Emotion Detection</span>
-            <Switch
-              checked={privacyOptOut}
-              onCheckedChange={setPrivacyOptOut}
-              className="data-[state=checked]:bg-red-500"
-            />
+            {/* Removed: Privacy Opt-Out */}
           </div>
         </div>
       </div>
@@ -692,7 +677,6 @@ const Index = () => {
                 {/* Camera Controls Component */}
                 <CameraControls
                   autoCapture={autoCapture}
-                  privacyOptOut={privacyOptOut}
                   backendStatus={backendStatus}
                   isAnalyzing={isAnalyzing}
                   onAutoCaptureChange={setAutoCapture}

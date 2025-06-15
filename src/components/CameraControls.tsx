@@ -21,7 +21,6 @@ interface CameraControlsProps {
 
 const CameraControls: React.FC<CameraControlsProps> = ({
   autoCapture,
-  privacyOptOut,
   backendStatus,
   isAnalyzing,
   onAutoCaptureChange,
@@ -45,7 +44,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({
       <Switch
         checked={autoCapture}
         onCheckedChange={onAutoCaptureChange}
-        disabled={privacyOptOut || backendStatus === "disconnected"}
+        disabled={backendStatus === "disconnected"}
         className="data-[state=checked]:bg-green-500"
       />
     </div>
@@ -53,14 +52,14 @@ const CameraControls: React.FC<CameraControlsProps> = ({
     <div className="flex flex-wrap gap-3">
       <Button
         onClick={onAnalyzeEntry}
-        disabled={isAnalyzing || privacyOptOut || backendStatus === "disconnected"}
+        disabled={isAnalyzing || backendStatus === "disconnected"}
         className="bg-green-600 hover:bg-green-700"
       >
         {isAnalyzing ? "Analyzing..." : "Capture Entry Emotion"}
       </Button>
       <Button
         onClick={onAnalyzeExit}
-        disabled={isAnalyzing || privacyOptOut || backendStatus === "disconnected"}
+        disabled={isAnalyzing || backendStatus === "disconnected"}
         className="bg-red-600 hover:bg-red-700"
       >
         {isAnalyzing ? "Analyzing..." : "Capture Exit Emotion"}
@@ -85,3 +84,4 @@ const CameraControls: React.FC<CameraControlsProps> = ({
 );
 
 export default CameraControls;
+
