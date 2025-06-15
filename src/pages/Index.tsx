@@ -13,6 +13,9 @@ import AlertSection from '@/components/AlertSection';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import UploadFile from "@/components/UploadFile";
 import { useAuth } from "@/hooks/useAuth";
+import CameraControls from "@/components/CameraControls";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
+import Sidebar from "@/components/Sidebar";
 
 interface EmotionData {
   timestamp: string;
@@ -522,151 +525,40 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CameraFeed ref={videoRef} />
-                
-                <div className="mt-4 space-y-4">
-                  {/* Auto Capture Control */}
-                  <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {autoCapture ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-slate-400" />}
-                      <span className="text-slate-200">Auto AI Detection</span>
-                      <Badge variant={autoCapture ? "default" : "secondary"}>
-                        {autoCapture ? "Active" : "Paused"}
-                      </Badge>
-                    </div>
-                    <Switch
-                      checked={autoCapture}
-                      onCheckedChange={setAutoCapture}
-                      disabled={privacyOptOut || backendStatus === 'disconnected'}
-                      className="data-[state=checked]:bg-green-500"
-                    />
-                  </div>
-
-                  {/* Manual Capture Buttons */}
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      onClick={() => analyzeEmotion('entry')}
-                      disabled={isAnalyzing || privacyOptOut || backendStatus === 'disconnected'}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {isAnalyzing ? 'Analyzing...' : 'Capture Entry Emotion'}
-                    </Button>
-                    <Button
-                      onClick={() => analyzeEmotion('exit')}
-                      disabled={isAnalyzing || privacyOptOut || backendStatus === 'disconnected'}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      {isAnalyzing ? 'Analyzing...' : 'Capture Exit Emotion'}
-                    </Button>
-                    <Button
-                      onClick={compareSatisfaction}
-                      disabled={!entryEmotion || !exitEmotion}
-                      variant="outline"
-                      className="border-purple-500 text-purple-400 hover:bg-purple-500/10"
-                    >
-                      Compare Satisfaction
-                    </Button>
-                    <Button
-                      onClick={resetSession}
-                      variant="outline"
-                      className="border-slate-500 text-slate-400 hover:bg-slate-500/10"
-                    >
-                      Reset Session
-                    </Button>
-                  </div>
-                </div>
+                {/* Camera Controls Component */}
+                <CameraControls
+                  autoCapture={autoCapture}
+                  privacyOptOut={privacyOptOut}
+                  backendStatus={backendStatus}
+                  isAnalyzing={isAnalyzing}
+                  onAutoCaptureChange={setAutoCapture}
+                  onAnalyzeEntry={() => analyzeEmotion("entry")}
+                  onAnalyzeExit={() => analyzeEmotion("exit")}
+                  onCompare={compareSatisfaction}
+                  onReset={resetSession}
+                  entryEmotion={entryEmotion}
+                  exitEmotion={exitEmotion}
+                />
               </CardContent>
             </Card>
-
-            {/* Analytics Charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-100">
-                    <BarChart3 className="h-5 w-5" />
-                    Emotion Trends
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EmotionChart data={emotionHistory} />
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-100">
-                    <Users className="h-5 w-5" />
-                    Session Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-300">Total Analyses</span>
-                    <Badge variant="secondary">{emotionHistory.length}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-300">Unhappy Exits</span>
-                    <Badge variant={unhappyCount > 2 ? "destructive" : "secondary"}>
-                      {unhappyCount}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-300">Auto Detection</span>
-                    <Badge variant={autoCapture ? "default" : "secondary"}>
-                      {autoCapture ? "Running" : "Stopped"}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-300">Backend Status</span>
-                    <Badge variant={backendStatus === 'connected' ? "default" : "destructive"}>
-                      {backendStatus}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* CURRENT EMOTION DISPLAY */}
-            <EmotionDisplay
-              emotion={currentEmotion}
-              confidence={emotionConfidence}
-              entryEmotion={entryEmotion}
-              exitEmotion={exitEmotion}
-              satisfactionResult={satisfactionResult}
-              // Pass scores to EmotionDisplay
-              emotionScores={currentEmotionScores}
+            {/* Analytics Dashboard */}
+            <AnalyticsDashboard
+              emotionHistory={emotionHistory}
+              unhappyCount={unhappyCount}
+              autoCapture={autoCapture}
+              backendStatus={backendStatus}
             />
-            {/* Emotion History Log */}
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-100">
-                  <Clock className="h-5 w-5" />
-                  Real-Time Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <EmotionLog data={emotionHistory.slice(0, 10)} />
-              </CardContent>
-            </Card>
-
-            {/* AI Recommendations */}
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-100">
-                  <TrendingUp className="h-5 w-5" />
-                  AI Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-slate-300 text-sm space-y-2">
-                <p>• Monitor peak unhappy exit times</p>
-                <p>• Consider staff training during high-stress periods</p>
-                <p>• Implement immediate follow-up for dissatisfied customers</p>
-                <p>• Analyze correlation between wait times and emotions</p>
-              </CardContent>
-            </Card>
           </div>
+          {/* Sidebar Section */}
+          <Sidebar
+            currentEmotion={currentEmotion}
+            emotionConfidence={emotionConfidence}
+            entryEmotion={entryEmotion}
+            exitEmotion={exitEmotion}
+            satisfactionResult={satisfactionResult}
+            emotionScores={currentEmotionScores}
+            emotionHistory={emotionHistory}
+          />
         </div>
       </div>
     </div>
