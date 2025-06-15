@@ -144,6 +144,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           autoCapture={autoCapture}
           backendStatus={backendStatus}
         />
+        {/* Only keep ONE JourneyTracking */}
         <JourneyTracking
           entryEmotion={entryEmotion}
           exitEmotion={exitEmotion}
