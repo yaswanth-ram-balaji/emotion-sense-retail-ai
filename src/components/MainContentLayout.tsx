@@ -90,9 +90,9 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         cameraVideoRef={cameraVideoRef}
       />
       {/* 2. Emotion Heatmap */}
-      <EmotionHeatmap emotionHistory={emotionHistory} backendStatus={backendStatus} />
+      <EmotionHeatmap emotionHistory={emotionHistory} />
       {/* 3. Emotion Trends (bar and pie) */}
-      <EmotionChart emotionHistory={emotionHistory} backendStatus={backendStatus} />
+      <EmotionChart data={emotionHistory} />
       {/* 4/5. AnalyticsDashboard for Satisfaction % and Metrics */}
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
@@ -101,7 +101,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         backendStatus={backendStatus}
       />
     </section>
-
     {/* Sidebar: all right-panel metric cards, sticky on large screens */}
     <aside className="flex flex-col gap-6 w-full md:w-[370px] max-w-[370px] min-w-[320px] md:sticky md:top-4">
       <Sidebar
@@ -120,7 +119,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         entryEmotion={entryEmotion}
         exitEmotion={exitEmotion}
         satisfactionResult={satisfactionResult}
-        emotionHistory={emotionHistory}
       />
     </aside>
   </div>
