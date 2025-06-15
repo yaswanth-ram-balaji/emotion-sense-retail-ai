@@ -29,14 +29,23 @@ async def detect_face(payload: ImageInput):
     """
     try:
         imgdata = base64.b64decode(payload.image_base64.split(",")[-1])
-        img = Image.open(BytesIO(imgdata)).convert("RGB")
+        try:
+            img = Image.open(BytesIO(imgdata)).convert("RGB")
+        except Exception as e:
+            print("Image.open error:", e)
+            raise HTTPException(status_code=400, detail=f"Unable to open image: {e}")
         # Fake detection: just return the original cropped image for demo
         buffered = BytesIO()
-        img.save(buffered, format="JPEG")
-        face_crop_base64 = base64.b64encode(buffered.getvalue()).decode()
-        return {"face_crop_base64": face_crop_base64}
-    except Exception:
-        raise HTTPException(status_code=400, detail="Unable to process image for face detection")
+        try:
+            img.save(buffered, format="JPEG")
+            face_crop_base64 = base64.b64encode(buffered.getvalue()).decode()
+            return {"face_crop_base64": face_crop_base64}
+        except Exception as e:
+            print("img.save error:", e)
+            raise HTTPException(status_code=400, detail=f"Unable to save image: {e}")
+    except Exception as e:
+        print("detect_face 500 error:", e)
+        raise HTTPException(status_code=400, detail=f"Unable to process image for face detection: {e}")
 
 @app.post("/analyze_emotion")
 async def analyze_emotion(payload: ImageInput):
