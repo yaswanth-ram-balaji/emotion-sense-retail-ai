@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart3, Users, TrendingUp } from "lucide-react";
+import { BarChart3, Users, TrendingUp, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmotionChart from "@/components/EmotionChart";
 import EmotionHeatmap from "./EmotionHeatmap";
@@ -12,6 +12,41 @@ interface AnalyticsDashboardProps {
   backendStatus: "connected" | "disconnected" | "checking";
 }
 
+function downloadJSON(data: any[], filename: string) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCSV(data: any[], filename: string) {
+  if (!data.length) return;
+  const keys = Object.keys(data[0]);
+  const csvRows = [
+    keys.join(","),
+    ...data.map(row =>
+      keys.map(key => {
+        const val = row[key];
+        if (typeof val === "object" && val !== null) {
+          return '"' + JSON.stringify(val).replace(/"/g, '""') + '"';
+        }
+        return typeof val === "string" ? `"${val.replace(/"/g, '""')}"` : val;
+      }).join(",")
+    )
+  ];
+  const csvContent = csvRows.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   emotionHistory,
   unhappyCount,
@@ -19,6 +54,25 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   backendStatus
 }) => (
   <div className="space-y-6">
+    {/* Export buttons area at the top */}
+    <div className="flex flex-wrap items-center gap-3 justify-end mb-2">
+      <button
+        className="flex items-center gap-1 px-3 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition text-sm shadow"
+        title="Export emotion history as CSV"
+        onClick={() => downloadCSV(emotionHistory, "emotion-history.csv")}
+        disabled={!emotionHistory.length}
+      >
+        <Download className="w-4 h-4" /> Export CSV
+      </button>
+      <button
+        className="flex items-center gap-1 px-3 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition text-sm shadow"
+        title="Export emotion history as JSON"
+        onClick={() => downloadJSON(emotionHistory, "emotion-history.json")}
+        disabled={!emotionHistory.length}
+      >
+        <Download className="w-4 h-4" /> Export JSON
+      </button>
+    </div>
     <EmotionHeatmap emotionHistory={emotionHistory} />
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
