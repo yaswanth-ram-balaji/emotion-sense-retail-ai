@@ -11,6 +11,8 @@ import EmotionChart from '@/components/EmotionChart';
 import EmotionLog from '@/components/EmotionLog';
 import AlertSection from '@/components/AlertSection';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import UploadFile from "@/components/UploadFile";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EmotionData {
   timestamp: string;
@@ -32,6 +34,7 @@ const emotionModels = [
 ];
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const [currentEmotion, setCurrentEmotion] = useState<string>('');
   const [emotionConfidence, setEmotionConfidence] = useState<number>(0);
   const [currentEmotionScores, setCurrentEmotionScores] = useState<Record<string, number> | null>(null);
