@@ -13,58 +13,6 @@ import { Button } from "@/components/ui/button";
 import { useEmotionSense } from '@/hooks/useEmotionSense';
 
 // Helper functions for emotion display and journey tracking
-const getEmotionEmoji = (emotion: string): string => {
-  const normalizedEmotion = emotion.toLowerCase();
-  const emojiMap: { [key: string]: string } = {
-    'happy': '😊',
-    'happiness': '😊',
-    'joy': '😊',
-    'sad': '😢',
-    'sadness': '😢',
-    'angry': '😠',
-    'anger': '😠',
-    'surprised': '😲',
-    'surprise': '😲',
-    'fear': '😨',
-    'fearful': '😨',
-    'disgust': '🤢',
-    'disgusted': '🤢',
-    'neutral': '😐',
-    'contempt': '😤',
-    'contemptuous': '😤'
-  };
-  return emojiMap[normalizedEmotion] || '🤔';
-};
-
-const getEmotionColor = (emotion: string): string => {
-  const normalizedEmotion = emotion.toLowerCase();
-  const colorMap: { [key: string]: string } = {
-    'happy': 'text-green-400',
-    'happiness': 'text-green-400',
-    'joy': 'text-green-400',
-    'sad': 'text-blue-400',
-    'sadness': 'text-blue-400',
-    'angry': 'text-red-400',
-    'anger': 'text-red-400',
-    'surprised': 'text-yellow-400',
-    'surprise': 'text-yellow-400',
-    'fear': 'text-purple-400',
-    'fearful': 'text-purple-400',
-    'disgust': 'text-orange-400',
-    'disgusted': 'text-orange-400',
-    'neutral': 'text-gray-400',
-    'contempt': 'text-pink-400',
-    'contemptuous': 'text-pink-400'
-  };
-  return colorMap[normalizedEmotion] || 'text-gray-400';
-};
-
-const getSatisfactionColor = (satisfaction: string): string => {
-  if (satisfaction.toLowerCase().includes('satisfied')) return 'text-green-400';
-  if (satisfaction.toLowerCase().includes('unhappy')) return 'text-red-400';
-  return 'text-yellow-400';
-};
-
 const GradientSection = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full mb-8">
     <div className="w-full mx-auto bg-gradient-to-r from-purple-800 via-blue-800 to-indigo-900 p-1 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
@@ -146,9 +94,9 @@ const Index = () => {
             entryEmotion={emotion.entryEmotion}
             exitEmotion={emotion.exitEmotion}
             satisfactionResult={emotion.satisfactionResult}
-            getEmotionEmoji={getEmotionEmoji}
-            getEmotionColor={getEmotionColor}
-            getSatisfactionColor={getSatisfactionColor}
+            getEmotionEmoji={emotion.getEmotionEmoji}
+            getEmotionColor={emotion.getEmotionColor}
+            getSatisfactionColor={emotion.getSatisfactionColor}
           />
         </GradientSection>
         {/* 4. Emotion Metrics */}
@@ -180,7 +128,6 @@ const Index = () => {
             </div>
           </SidebarSection>
         </GradientSection>
-
         {/* Sidebar sections (6-9) */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* 6. Real-Time Activity */}
