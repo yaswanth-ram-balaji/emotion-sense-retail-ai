@@ -25,7 +25,7 @@ function aggregateByHour(emotionHistory) {
   // Prepare recharts data: [{ hour: '00', happy: 0, sad: 3, ... }]
   return Object.entries(hourMap).map(([hour, counts]) => ({
     hour: hour.toString().padStart(2, '0'),
-    ...counts,
+    ...((counts as Record<string, number>)),
   }));
 }
 
