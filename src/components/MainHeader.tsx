@@ -1,3 +1,4 @@
+
 import React from "react";
 import BackendAlert from "@/components/BackendAlert";
 import AlertSection from "@/components/AlertSection";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Camera, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+
 interface MainHeaderProps {
   backendStatus: "connected" | "disconnected" | "checking";
   selectedModel: string;
@@ -32,6 +34,7 @@ const getBackendDotColor = (status: string) => {
   if (status === "disconnected") return "bg-red-500";
   return "bg-yellow-400 animate-pulse";
 };
+
 const MainHeader: React.FC<MainHeaderProps> = ({
   backendStatus,
   selectedModel,
@@ -42,9 +45,20 @@ const MainHeader: React.FC<MainHeaderProps> = ({
   faceBlur,
   setFaceBlur,
   retryBackendConnection
-}) => <>
-    {/* --- Header Logo and Backend Alert --- */}
-    
+}) => (
+  <div className="relative">
+    {/* --- Top-right backend status dot --- */}
+    <span
+      className={`
+        absolute top-3 right-3 z-50
+        w-4 h-4 rounded-full border-2 border-slate-900 shadow-lg
+        ${getBackendDotColor(backendStatus)}
+      `}
+      title={backendStatus === "connected" ? "Backend Connected"
+        : backendStatus === "disconnected" ? "Backend Not Connected"
+        : "Backend Checking..."}
+      aria-label="Backend Status"
+    />
 
     {/* --- Title and Tagline --- */}
     <div className="text-center space-y-2 sm:space-y-3 my-2">
@@ -58,7 +72,6 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 
     {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
     <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
-
       {/* Camera/Upload Segmented Toggle - UPDATED */}
       <ModeSegmentedButton
         value={useUpload ? "upload" : "camera"}
@@ -74,19 +87,6 @@ const MainHeader: React.FC<MainHeaderProps> = ({
           `}>
           Face Blur
         </label>
-      </div>
-
-      {/* Backend Status: just dot + text */}
-      <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 min-w-[110px] shadow-sm">
-        <span className={`
-            inline-block w-3 h-3 rounded-full
-            ${getBackendDotColor(backendStatus)}
-          `} />
-        <span className="text-xs font-semibold" style={{
-        color: backendStatus === "connected" ? "#22c55e" : backendStatus === "disconnected" ? "#f87171" : "#facc15"
-      }}>
-          {backendStatus === "checking" ? "Checking..." : backendStatus === "connected" ? "Backend Connected" : "Not Connected"}
-        </span>
       </div>
 
       {/* Model Selector */}
@@ -112,5 +112,8 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 
     {/* Alerts Section */}
     <AlertSection unhappyCount={unhappyCount} />
-  </>;
+
+  </div>
+);
+
 export default MainHeader;
