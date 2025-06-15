@@ -14,7 +14,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ useUpload, setUseUpload }) => (
     <div className="mb-6">
       <h1 className="text-3xl font-extrabold text-white drop-shadow-md">
         <span className="block text-purple-300">Retail</span>
-        <span className="block text-white glow-purple">EmotionSense</span>
+        <span className="block text-white drop-shadow-purple">EmotionSense</span>
       </h1>
       <p className="mt-2 text-xs text-slate-300/80 font-medium">
         Unlocking real-time emotional insights for unparalleled customer experiences.
@@ -49,9 +49,6 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ useUpload, setUseUpload }) => (
       <SectionNav label="Real-Time Activity" />
       <SectionNav label="AI Insights" />
     </nav>
-    <style jsx>{`
-      .glow-purple { text-shadow: 0 0 8px #9f57e7, 0 0 1px #fff; }
-    `}</style>
   </aside>
 );
 
