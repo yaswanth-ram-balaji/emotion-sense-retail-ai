@@ -1,3 +1,4 @@
+
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -32,7 +33,7 @@ interface MainContentLayoutProps {
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
-// For easy maintenance, keep the vertical stacking here
+// Main content area stacked in sections, glassy cards, padding, etc
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
   fullscreen,
@@ -61,8 +62,8 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   genderGuess,
   cameraVideoRef
 }) => (
-  <div className="max-w-4xl mx-auto w-full flex flex-col gap-7 py-8">
-    {/* 1. Live AI Emotion Detection */}
+  <div className="max-w-5xl mx-auto w-full flex flex-col gap-8">
+    {/* Live AI Detection module, more prominent */}
     <CameraPanel
       useUpload={useUpload}
       fullscreen={fullscreen}
@@ -83,30 +84,14 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
       faceBlur={faceBlur}
       cameraVideoRef={cameraVideoRef}
     />
-
-    {/* 2. Emotion Heatmap (Hourly) */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Emotion Heatmap (Hourly)</h2>
+    {/* Analytics and activity to mimic collapsible style groupings */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
         unhappyCount={unhappyCount}
         autoCapture={autoCapture}
         backendStatus={backendStatus}
       />
-    </div>
-
-    {/* 3. Emotion Trends */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Emotion Trends</h2>
-      {/* If you have a line chart or similar for trends, add it here.
-          Example: <EmotionTrendChart ... /> */}
-      {/* Placeholder: */}
-      <p className="text-slate-300 bg-slate-800/50 rounded-lg p-6 text-center">[Emotion Trends Chart Placeholder]</p>
-    </div>
-
-    {/* 4. Customer Satisfaction */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Customer Satisfaction</h2>
       <Sidebar
         currentEmotion={currentEmotion}
         emotionConfidence={emotionConfidence}
@@ -118,51 +103,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         ageGuess={ageGuess}
         genderGuess={genderGuess}
       />
-    </div>
-
-    {/* 5. Emotion Metrics */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Emotion Metrics</h2>
-      {/* If there is a metrics component add here, else placeholder */}
-      <p className="text-slate-300 bg-slate-800/50 rounded-lg p-6 text-center">[Emotion Metrics Card Placeholder]</p>
-    </div>
-
-    {/* 6. Customer Journey */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Customer Journey</h2>
-      {/* Add customer journey content if available */}
-      <p className="text-slate-300 bg-slate-800/50 rounded-lg p-6 text-center">[Customer Journey Placeholder]</p>
-    </div>
-
-    {/* 7. Real-Time Activity */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">Real-Time Activity</h2>
-      {/* Activity/live log, could use EmotionLog or similar */}
-      <Sidebar
-        currentEmotion={currentEmotion}
-        emotionConfidence={emotionConfidence}
-        entryEmotion={entryEmotion}
-        exitEmotion={exitEmotion}
-        satisfactionResult={satisfactionResult}
-        emotionScores={emotionScores}
-        emotionHistory={emotionHistory}
-        ageGuess={ageGuess}
-        genderGuess={genderGuess}
-      />
-    </div>
-
-    {/* 8. AI Insights */}
-    <div>
-      <h2 className="text-xl font-semibold text-slate-100 mb-2">AI Insights</h2>
-      {/* Add insight content or keep as is */}
-      <div className="text-slate-300 bg-slate-800/50 rounded-lg p-6">
-        <ul className="list-disc ml-4 space-y-1">
-          <li>Monitor peak unhappy exit times</li>
-          <li>Consider staff training during high-stress periods</li>
-          <li>Implement immediate follow-up for dissatisfied customers</li>
-          <li>Analyze correlation between wait times and emotions</li>
-        </ul>
-      </div>
     </div>
   </div>
 );
