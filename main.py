@@ -64,10 +64,12 @@ async def analyze_emotion(payload: ImageInput):
                     print(f"DEBUG: FER emotions dict: {emotions_dict}")
                     emotion = max(emotions_dict, key=emotions_dict.get)
                     score = float(emotions_dict[emotion])
-                    return {"emotion": emotion, "confidence": score}
+                    # Return all scores as percent (0-100)
+                    percent_scores = {em: float(emotions_dict[em]) * 100 if float(emotions_dict[em]) <= 1.0 else float(emotions_dict[em]) for em in emotions_dict}
+                    return {"emotion": emotion, "confidence": score, "emotion_scores": percent_scores}
                 else:
                     print("DEBUG: No emotions detected, defaulting to neutral")
-                    return {"emotion": "neutral", "confidence": 0.0}
+                    return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
             except ImportError as e:
                 error_msg = "ERROR: FER library not installed\n" + traceback.format_exc()
                 print(error_msg)
@@ -77,7 +79,7 @@ async def analyze_emotion(payload: ImageInput):
                 error_msg = f"ERROR: Exception in FER emotion analysis: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0}
+                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
         elif payload.method == "deepface":
             try:
                 print("DEBUG: Importing DeepFace")
@@ -86,8 +88,10 @@ async def analyze_emotion(payload: ImageInput):
                 res = DeepFace.analyze(img_path=np_img, actions=['emotion'], enforce_detection=False)
                 print(f"DEBUG: DeepFace result: {res}")
                 emotion = res['dominant_emotion']
-                score = float(res["emotion"][emotion]) / 100
-                return {"emotion": emotion, "confidence": score}
+                # DeepFace emotion dict: already in 0-100 percent
+                scores_dict = res['emotion']
+                score = scores_dict.get(emotion, 0.0)
+                return {"emotion": emotion, "confidence": float(score)/100, "emotion_scores": scores_dict}
             except ImportError as e:
                 error_msg = "ERROR: DeepFace library not installed\n" + traceback.format_exc()
                 print(error_msg)
@@ -97,7 +101,7 @@ async def analyze_emotion(payload: ImageInput):
                 error_msg = f"ERROR: Exception in DeepFace emotion analysis: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0}
+                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
         else:
             error_msg = f"ERROR: Invalid method specified\n"
             print(error_msg)

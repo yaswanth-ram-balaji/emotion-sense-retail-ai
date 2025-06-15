@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Activity, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +13,7 @@ interface EmotionDisplayProps {
     satisfaction: string;
     delta: string;
   } | null;
+  emotionScores?: Record<string, number> | null;
 }
 
 const getEmotionEmoji = (emotion: string): string => {
@@ -73,8 +73,16 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
   confidence,
   entryEmotion,
   exitEmotion,
-  satisfactionResult
+  satisfactionResult,
+  emotionScores
 }) => {
+  // Helper: sorted scores, highest first
+  const sortedScores = emotionScores 
+    ? Object.entries(emotionScores)
+        .map(([k, v]) => [k, Number(v)])
+        .sort((a, b) => b[1] - a[1])
+    : [];
+
   return (
     <div className="space-y-4">
       {/* Current Emotion */}
@@ -104,6 +112,22 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
                   className="h-2 bg-slate-700"
                 />
               </div>
+              {sortedScores.length > 0 && (
+                <div className="pt-2">
+                  <div className="text-sm text-slate-400 font-semibold">All emotion scores:</div>
+                  <div className="flex flex-wrap justify-center gap-1 mt-1">
+                    {sortedScores.map(([em, score]) => (
+                      <span
+                        key={em}
+                        className={`text-xs rounded px-2 py-1 bg-slate-700/50 m-1 ${getEmotionColor(em)}`}
+                        title={`${em.charAt(0).toUpperCase() + em.slice(1)}`}
+                      >
+                        {em.charAt(0).toUpperCase() + em.slice(1)}: {score.toFixed(1)}%
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="py-8 text-slate-400">

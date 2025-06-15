@@ -10,13 +10,14 @@ import EmotionDisplay from '@/components/EmotionDisplay';
 import EmotionChart from '@/components/EmotionChart';
 import EmotionLog from '@/components/EmotionLog';
 import AlertSection from '@/components/AlertSection';
-// Removed: import { MockBackendService } from '@/services/mockBackend';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 interface EmotionData {
   timestamp: string;
   emotion: string;
   confidence?: number;
   type: 'entry' | 'exit';
+  emotion_scores?: Record<string, number>;
 }
 
 interface SatisfactionResult {
@@ -24,9 +25,16 @@ interface SatisfactionResult {
   delta: string;
 }
 
+// NEW: Supported emotion models
+const emotionModels = [
+  { label: 'FER (default)', value: 'fer' },
+  { label: 'DeepFace', value: 'deepface' }
+];
+
 const Index = () => {
   const [currentEmotion, setCurrentEmotion] = useState<string>('');
   const [emotionConfidence, setEmotionConfidence] = useState<number>(0);
+  const [currentEmotionScores, setCurrentEmotionScores] = useState<Record<string, number> | null>(null);
   const [entryEmotion, setEntryEmotion] = useState<string>('');
   const [exitEmotion, setExitEmotion] = useState<string>('');
   const [satisfactionResult, setSatisfactionResult] = useState<SatisfactionResult | null>(null);
@@ -35,10 +43,10 @@ const Index = () => {
   const [privacyOptOut, setPrivacyOptOut] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
-  const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking'); // REMOVED 'mock'
+  const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [selectedModel, setSelectedModel] = useState<string>('fer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  // Removed: const mockBackend = MockBackendService.getInstance();
 
   // Check backend connectivity
   const checkBackendConnection = async () => {
@@ -151,8 +159,8 @@ const Index = () => {
 
       let emotion: string;
       let confidence: number;
+      let emotionScores: Record<string, number> | undefined;
 
-      // Only real backend now
       // Step 1: Detect face with proper headers
       const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
         method: 'POST',
@@ -161,7 +169,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: imageBase64, method: "fer" })
+        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
 
       if (!faceResponse.ok) {
@@ -183,7 +191,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: "fer" })
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
 
       if (!emotionResponse.ok) {
@@ -195,12 +203,16 @@ const Index = () => {
 
       emotion = emotionData.emotion;
       confidence = emotionData.confidence || 0.85;
+      emotionScores = emotionData.emotion_scores || null;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
+      setCurrentEmotionScores(emotionScores);
 
       console.log(`Detected emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
-
+      if (emotionScores) {
+        console.log('Emotion scores:', emotionScores);
+      }
     } catch (error) {
       console.error('Error in emotion detection:', error);
 
@@ -250,8 +262,8 @@ const Index = () => {
       const imageBase64 = await captureImage();
       let emotion: string;
       let confidence: number;
+      let emotionScores: Record<string, number> | undefined;
 
-      // Only real backend logic
       // Step 1: Detect face
       const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
         method: 'POST',
@@ -260,7 +272,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: imageBase64, method: "fer" })
+        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
 
       if (!faceResponse.ok) {
@@ -281,7 +293,7 @@ const Index = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: "fer" })
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
 
       if (!emotionResponse.ok) {
@@ -290,9 +302,11 @@ const Index = () => {
       const emotionData = await emotionResponse.json();
       emotion = emotionData.emotion;
       confidence = emotionData.confidence || 0.85;
+      emotionScores = emotionData.emotion_scores || null;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
+      setCurrentEmotionScores(emotionScores);
 
       if (type === 'entry') {
         setEntryEmotion(emotion);
@@ -304,7 +318,8 @@ const Index = () => {
         timestamp: new Date().toISOString(),
         emotion,
         confidence,
-        type
+        type,
+        emotion_scores: emotionScores
       };
       setEmotionHistory(prev => [newEntry, ...prev].slice(0, 50));
 
@@ -318,6 +333,9 @@ const Index = () => {
       });
 
       console.log(`${type} emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
+      if (emotionScores) {
+        console.log('Emotion scores:', emotionScores);
+      }
 
     } catch (error) {
       console.error('Error analyzing emotion:', error);
@@ -425,6 +443,18 @@ const Index = () => {
             </Badge>
           </div>
           <div className="flex items-center gap-3">
+            {/* NEW: Model Selector */}
+            <span className="text-blue-100 text-sm">Model:</span>
+            <Select value={selectedModel} onValueChange={val => setSelectedModel(val)}>
+              <SelectTrigger className="w-[120px] bg-slate-900 border-blue-400">
+                <SelectValue>{emotionModels.find(m => m.value === selectedModel)?.label}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {emotionModels.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <span className="text-blue-100 text-sm">Opt out of Emotion Detection</span>
             <Switch
               checked={privacyOptOut}
@@ -595,15 +625,16 @@ const Index = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Current Emotion Display */}
+            {/* CURRENT EMOTION DISPLAY */}
             <EmotionDisplay
               emotion={currentEmotion}
               confidence={emotionConfidence}
               entryEmotion={entryEmotion}
               exitEmotion={exitEmotion}
               satisfactionResult={satisfactionResult}
+              // Pass scores to EmotionDisplay
+              emotionScores={currentEmotionScores}
             />
-
             {/* Emotion History Log */}
             <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
               <CardHeader>
