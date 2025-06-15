@@ -30,10 +30,10 @@ interface SatisfactionResult {
   delta: string;
 }
 
-// NEW: Supported emotion models
+// Supported emotion models (only best two)
 const emotionModels = [
-  { label: 'DeepFace', value: 'deepface' },
-  { label: 'FER+ (HuggingFace)', value: 'huggingface' }
+  { label: "DeepFace", value: "deepface" },
+  { label: "FER+ (HuggingFace)", value: "huggingface" }
 ];
 
 const Index = () => {

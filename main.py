@@ -85,7 +85,6 @@ async def analyze_emotion(payload: ImageInput):
                 res = DeepFace.analyze(img_path=np_img, actions=['emotion'], enforce_detection=False)
                 print(f"DEBUG: DeepFace result: {res}")
                 emotion = res['dominant_emotion']
-                # DeepFace emotion dict: already in 0-100 percent
                 scores_dict = res['emotion']
                 score = scores_dict.get(emotion, 0.0)
                 return {"emotion": emotion, "confidence": float(score)/100, "emotion_scores": scores_dict}
@@ -113,3 +112,4 @@ async def analyze_emotion(payload: ImageInput):
 @app.get("/")
 async def root():
     # ... keep existing code (root) the same ...
+
