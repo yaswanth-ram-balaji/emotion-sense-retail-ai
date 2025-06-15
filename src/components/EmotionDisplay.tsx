@@ -79,7 +79,7 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
   // Helper: sorted scores, highest first
   const sortedScores = emotionScores 
     ? Object.entries(emotionScores)
-        .map(([k, v]) => [k, Number(v)])
+        .map(([k, v]) => [String(k), Number(v)] as [string, number])
         .sort((a, b) => b[1] - a[1])
     : [];
 
@@ -105,10 +105,10 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400">Confidence</span>
-                  <span className="text-slate-300">{(confidence * 100).toFixed(1)}%</span>
+                  <span className="text-slate-300">{(Number(confidence) * 100).toFixed(1)}%</span>
                 </div>
                 <Progress 
-                  value={confidence * 100} 
+                  value={Number(confidence) * 100} 
                   className="h-2 bg-slate-700"
                 />
               </div>
@@ -118,11 +118,18 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
                   <div className="flex flex-wrap justify-center gap-1 mt-1">
                     {sortedScores.map(([em, score]) => (
                       <span
-                        key={em}
-                        className={`text-xs rounded px-2 py-1 bg-slate-700/50 m-1 ${getEmotionColor(em)}`}
-                        title={`${em.charAt(0).toUpperCase() + em.slice(1)}`}
+                        key={String(em)}
+                        className={`text-xs rounded px-2 py-1 bg-slate-700/50 m-1 ${getEmotionColor(String(em))}`}
+                        title={
+                          typeof em === 'string'
+                            ? em.charAt(0).toUpperCase() + em.slice(1)
+                            : String(em)
+                        }
                       >
-                        {em.charAt(0).toUpperCase() + em.slice(1)}: {score.toFixed(1)}%
+                        {(typeof em === 'string'
+                          ? em.charAt(0).toUpperCase() + em.slice(1)
+                          : String(em)
+                        )}: {Number(score).toFixed(1)}%
                       </span>
                     ))}
                   </div>
