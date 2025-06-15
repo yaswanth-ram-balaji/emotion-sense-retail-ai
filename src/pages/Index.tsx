@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import CameraControls from "@/components/CameraControls";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
+import PhotoUploader from "@/components/PhotoUploader";
 
 interface EmotionData {
   timestamp: string;
@@ -53,6 +54,11 @@ const Index = () => {
   const [selectedModel, setSelectedModel] = useState<string>('fer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
+  const [fullscreen, setFullscreen] = useState<boolean>(false);
+  const [useUpload, setUseUpload] = useState<boolean>(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
 
   // Check backend connectivity
   const checkBackendConnection = async () => {
@@ -434,6 +440,98 @@ const Index = () => {
     }
   };
 
+  // Camera device list discovery for parent dropdown (not just in CameraFeed)
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        setCameraDevices(cameras);
+        if (!selectedDeviceId && cameras.length > 0) {
+          setSelectedDeviceId(cameras[0].deviceId);
+        }
+      })
+      .catch(() => setCameraDevices([]));
+    // Do not set as dependency to avoid endless devices call loop
+    // eslint-disable-next-line
+  }, []);
+
+  // Helper: When toggling between modes (camera/upload), reset refs/photos
+  const handleUseUploadToggle = () => {
+    setUseUpload(prev => {
+      if (!prev) { setPhotoUrl(null); }
+      return !prev;
+    });
+  };
+
+  // When switching back to camera, remove upload photo
+  useEffect(() => {
+    if (!useUpload) {
+      setPhotoUrl(null);
+    }
+  }, [useUpload]);
+
+  // Emotion detection for uploaded image: onPhotoDetect triggers the same backend flow but uses the photoUrl
+  const detectEmotionFromPhoto = async () => {
+    if (!photoUrl) return;
+    setIsAnalyzing(true);
+    try {
+      const imageBase64 = photoUrl.split(",")[1] || photoUrl;
+
+      // Step 1: Detect face
+      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
+      });
+
+      if (!faceResponse.ok) {
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
+      }
+
+      const faceData = await faceResponse.json();
+      if (!faceData.face_crop_base64) {
+        throw new Error('No face detected in image');
+      }
+
+      // Step 2: Analyze emotion
+      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
+      });
+
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+      }
+      const emotionData = await emotionResponse.json();
+      setCurrentEmotion(emotionData.emotion);
+      setEmotionConfidence(emotionData.confidence || 0.85);
+      setCurrentEmotionScores(emotionData.emotion_scores || null);
+
+      toast({
+        title: 'Photo Emotion Detected',
+        description: `Detected: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}%)`
+      });
+    } catch (error) {
+      console.error('Error analyzing uploaded photo:', error);
+      toast({
+        title: "Photo Detection Failed",
+        description: error instanceof Error ? error.message : "Could not detect photo emotion",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Privacy Banner */}
@@ -509,9 +607,39 @@ const Index = () => {
         {/* Alert Section */}
         <AlertSection unhappyCount={unhappyCount} />
 
-        {/* Main Dashboard */}
+        {/* UI controller: toggle use camera or upload */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 justify-center">
+          <Button
+            variant={useUpload ? "secondary" : "default"}
+            onClick={() => setUseUpload(false)}
+          >
+            Camera Mode
+          </Button>
+          <Button
+            variant={useUpload ? "default" : "secondary"}
+            onClick={handleUseUploadToggle}
+          >
+            Upload Photo
+          </Button>
+          {!useUpload && cameraDevices.length > 1 && (
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded px-3 py-1">
+              <span className="text-xs text-slate-200">Camera:</span>
+              <select
+                value={selectedDeviceId || ''}
+                onChange={e => setSelectedDeviceId(e.target.value)}
+                className="bg-slate-900 text-white px-2 py-1 rounded border border-slate-500 text-xs outline-none"
+              >
+                {cameraDevices.map(device => (
+                  <option key={device.deviceId} value={device.deviceId}>
+                    {device.label || "Camera"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Camera and Controls */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
               <CardHeader>
@@ -524,7 +652,43 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CameraFeed ref={videoRef} />
+                {/* Render video OR photo uploader */}
+                {useUpload ? (
+                  <>
+                    <PhotoUploader onUpload={(url) => setPhotoUrl(url)} />
+                    {photoUrl && (
+                      <>
+                        <CameraFeed
+                          className="mt-4"
+                          photoUrl={photoUrl}
+                          showUpload={false}
+                          fullscreen={fullscreen}
+                          onToggleFullscreen={() => setFullscreen(f => !f)}
+                        />
+                        <div className="mt-4 flex gap-2">
+                          <Button onClick={detectEmotionFromPhoto} disabled={isAnalyzing}>
+                            Detect Emotion
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            onClick={() => setPhotoUrl(null)}
+                          >
+                            Remove Photo
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <CameraFeed
+                    ref={videoRef}
+                    className=""
+                    selectedDeviceId={selectedDeviceId}
+                    showUpload={false} // Upload handled in upload mode above
+                    fullscreen={fullscreen}
+                    onToggleFullscreen={() => setFullscreen(f => !f)}
+                  />
+                )}
                 {/* Camera Controls Component */}
                 <CameraControls
                   autoCapture={autoCapture}
@@ -541,7 +705,6 @@ const Index = () => {
                 />
               </CardContent>
             </Card>
-            {/* Analytics Dashboard */}
             <AnalyticsDashboard
               emotionHistory={emotionHistory}
               unhappyCount={unhappyCount}
@@ -549,7 +712,6 @@ const Index = () => {
               backendStatus={backendStatus}
             />
           </div>
-          {/* Sidebar Section */}
           <Sidebar
             currentEmotion={currentEmotion}
             emotionConfidence={emotionConfidence}
