@@ -30,11 +30,7 @@ def log_error_to_file(msg):
 
 @app.post("/detect-face")
 async def detect_face(payload: ImageInput):
-    # ... keep existing code (detect_face) the same ...
-
-@app.post("/analyze_emotion")
-async def analyze_emotion(payload: ImageInput):
-    print("DEBUG: analyze_emotion called")
+    print("DEBUG: detect_face called")
     try:
         try:
             print("DEBUG: Decoding image")
@@ -49,76 +45,63 @@ async def analyze_emotion(payload: ImageInput):
             log_error_to_file(error_msg)
             raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
 
-        print(f"DEBUG: Analysis method = {payload.method}")
+        # Try to detect face and crop
         if payload.method == "huggingface":
-            try:
-                print("DEBUG: Importing transformers for HuggingFace FER+")
-                from transformers import pipeline
-                fe_model = pipeline("image-classification", model="nateraw/ferplus-8emotion")
-                result = fe_model(img)
-                print(f"DEBUG: HuggingFace FER+ result: {result}")
-                # result: list of dicts [{label: 'happy', score: 0.98}, ...], already sorted
-                if result:
-                    best = result[0]
-                    emotion = best["label"]
-                    score = float(best["score"])
-                    # Convert all emotion scores to a dict
-                    emotion_scores = {r['label'].lower(): float(r['score'])*100 for r in result}
-                    # Do NOT return age/gender anymore
-                    return {
-                        "emotion": emotion,
-                        "confidence": score,
-                        "emotion_scores": emotion_scores
-                    }
-                else:
-                    return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
-            except ImportError as e:
-                error_msg = "ERROR: transformers library not installed\n" + traceback.format_exc()
-                print(error_msg)
-                log_error_to_file(error_msg)
-                raise HTTPException(status_code=500, detail=f"HuggingFace not installed: {e}")
-            except Exception as e:
-                error_msg = f"ERROR: Exception in HuggingFace emotion analysis: {e}\n" + traceback.format_exc()
-                print(error_msg)
-                log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
+            # Face detection via HuggingFace (not implemented here — only DeepFace)
+            error_msg = f"ERROR: Face detection for HuggingFace method not implemented."
+            print(error_msg)
+            log_error_to_file(error_msg)
+            return {"face_crop_base64": payload.image_base64}
         elif payload.method == "deepface":
             try:
                 print("DEBUG: Importing DeepFace")
-                from deepface import DeepFace
-                print("DEBUG: Running DeepFace.analyze")
-                # Run emotion estimation only (age/gender removed)
-                res = DeepFace.analyze(img_path=np_img, actions=['emotion'], enforce_detection=False)
-                print(f"DEBUG: DeepFace result: {res}")
-                emotion = res['dominant_emotion']
-                scores_dict = res['emotion']
-                score = scores_dict.get(emotion, 0.0)
-                # Do NOT return age/gender anymore
-                return {
-                    "emotion": emotion,
-                    "confidence": float(score)/100,
-                    "emotion_scores": scores_dict
-                }
-            except ImportError as e:
-                error_msg = "ERROR: DeepFace library not installed\n" + traceback.format_exc()
-                print(error_msg)
-                log_error_to_file(error_msg)
-                raise HTTPException(status_code=500, detail=f"DeepFace not installed: {e}")
+                from deepface.detectors import FaceDetector
+                detector_name = "opencv"
+                detector = FaceDetector.build_model(detector_name)
+                print("DEBUG: Running OpenCV FaceDetector.detect_faces")
+                detected_faces = FaceDetector.detect_faces(detector_name, detector, np_img)
+                print(f"DEBUG: Faces detected: {len(detected_faces)}")
+                if not detected_faces:
+                    raise Exception("No face detected")
+                # Pick the face with largest box area (in case of multiple faces)
+                faces_sorted = sorted(
+                    detected_faces,
+                    key=lambda d: (d[1][2] * d[1][3]),  # width * height
+                    reverse=True,
+                )
+                face_region = faces_sorted[0][1]  # (x, y, w, h)
+                x, y, w, h = face_region
+                print(f"DEBUG: Cropping face at {x}, {y}, {w}, {h}")
+                x, y = max(0, x), max(0, y)
+                cropped_face = np_img[y:y+h, x:x+w]
+                if cropped_face.size == 0:
+                    raise Exception(f"Detected face region is empty (x={x}, y={y}, w={w}, h={h}).")
+                cropped_pil = Image.fromarray(cropped_face)
+                with BytesIO() as buf:
+                    cropped_pil.save(buf, format="JPEG")
+                    face_bytes = buf.getvalue()
+                    face_base64 = base64.b64encode(face_bytes).decode("utf-8")
+                # This is just the JPEG data, prepend data URL for frontend display
+                return {"face_crop_base64": "data:image/jpeg;base64," + face_base64}
             except Exception as e:
-                error_msg = f"ERROR: Exception in DeepFace emotion analysis: {e}\n" + traceback.format_exc()
+                error_msg = f"ERROR: Exception in DeepFace face detection: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
+                return {"face_crop_base64": None}
         else:
             error_msg = f"ERROR: Invalid method specified\n"
             print(error_msg)
             log_error_to_file(error_msg)
             raise HTTPException(status_code=400, detail=f"Invalid method: {payload.method}")
     except Exception as e:
-        error_msg = f"CRITICAL: Uncaught exception in analyze_emotion: {e}\n" + traceback.format_exc()
+        error_msg = f"CRITICAL: Uncaught exception in detect_face: {e}\n" + traceback.format_exc()
         print(error_msg)
         log_error_to_file(error_msg)
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+@app.post("/analyze_emotion")
+async def analyze_emotion(payload: ImageInput):
+    # ... keep existing code (analyze_emotion) the same ...
 
 @app.get("/")
 async def root():
