@@ -1,4 +1,3 @@
-
 import React from 'react';
 import CurrentEmotion from './CurrentEmotion';
 import JourneyTracking from './JourneyTracking';
@@ -88,9 +87,6 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({
       entryEmotion={entryEmotion}
       exitEmotion={exitEmotion}
       satisfactionResult={satisfactionResult}
-      getEmotionEmoji={getEmotionEmoji}
-      getEmotionColor={getEmotionColor}
-      getSatisfactionColor={getSatisfactionColor}
     />
   </div>
 );
