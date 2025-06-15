@@ -22,7 +22,7 @@ app.add_middleware(
 
 class ImageInput(BaseModel):
     image_base64: str
-    method: str = "fer"  # Default is FER, or you can use "deepface"
+    method: str = "deepface"  # Default to DeepFace, or you can use "huggingface"
 
 def log_error_to_file(msg):
     with open("backend_errors.log", "a", encoding="utf-8") as f:
@@ -50,33 +50,30 @@ async def analyze_emotion(payload: ImageInput):
             raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
 
         print(f"DEBUG: Analysis method = {payload.method}")
-        if payload.method == "fer":
+        if payload.method == "huggingface":
             try:
-                print("DEBUG: Importing FER")
-                from fer import FER
-                print("DEBUG: Creating FER detector")
-                detector = FER(mtcnn=True)
-                print("DEBUG: Running detect_emotions")
-                result = detector.detect_emotions(np_img)
-                print(f"DEBUG: FER result: {result}")
+                print("DEBUG: Importing transformers for HuggingFace FER+")
+                from transformers import pipeline
+                fe_model = pipeline("image-classification", model="nateraw/ferplus-8emotion")
+                result = fe_model(img)
+                print(f"DEBUG: HuggingFace FER+ result: {result}")
+                # result: list of dicts [{label: 'happy', score: 0.98}, ...], already sorted
                 if result:
-                    emotions_dict = result[0]["emotions"]
-                    print(f"DEBUG: FER emotions dict: {emotions_dict}")
-                    emotion = max(emotions_dict, key=emotions_dict.get)
-                    score = float(emotions_dict[emotion])
-                    # Return all scores as percent (0-100)
-                    percent_scores = {em: float(emotions_dict[em]) * 100 if float(emotions_dict[em]) <= 1.0 else float(emotions_dict[em]) for em in emotions_dict}
-                    return {"emotion": emotion, "confidence": score, "emotion_scores": percent_scores}
+                    best = result[0]
+                    emotion = best["label"]
+                    score = float(best["score"])
+                    # Convert all emotion scores to a dict
+                    emotion_scores = {r['label'].lower(): float(r['score'])*100 for r in result}
+                    return {"emotion": emotion, "confidence": score, "emotion_scores": emotion_scores}
                 else:
-                    print("DEBUG: No emotions detected, defaulting to neutral")
                     return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
             except ImportError as e:
-                error_msg = "ERROR: FER library not installed\n" + traceback.format_exc()
+                error_msg = "ERROR: transformers library not installed\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
-                raise HTTPException(status_code=500, detail=f"FER not installed: {e}")
+                raise HTTPException(status_code=500, detail=f"HuggingFace not installed: {e}")
             except Exception as e:
-                error_msg = f"ERROR: Exception in FER emotion analysis: {e}\n" + traceback.format_exc()
+                error_msg = f"ERROR: Exception in HuggingFace emotion analysis: {e}\n" + traceback.format_exc()
                 print(error_msg)
                 log_error_to_file(error_msg)
                 return {"emotion": "neutral", "confidence": 0.0, "emotion_scores": {}}
@@ -116,4 +113,3 @@ async def analyze_emotion(payload: ImageInput):
 @app.get("/")
 async def root():
     # ... keep existing code (root) the same ...
-

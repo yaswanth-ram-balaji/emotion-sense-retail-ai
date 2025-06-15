@@ -32,8 +32,8 @@ interface SatisfactionResult {
 
 // NEW: Supported emotion models
 const emotionModels = [
-  { label: 'FER (default)', value: 'fer' },
-  { label: 'DeepFace', value: 'deepface' }
+  { label: 'DeepFace', value: 'deepface' },
+  { label: 'FER+ (HuggingFace)', value: 'huggingface' }
 ];
 
 const Index = () => {
