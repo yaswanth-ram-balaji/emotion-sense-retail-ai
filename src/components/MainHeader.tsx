@@ -27,7 +27,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
 }) => <>
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-2">
       {/* Logo area */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 px-0 mx-0 my-[4px]">
         {/* Placeholder circular logo, easily swappable */}
         <img alt="EmotionSense Logo" className="w-10 h-10 rounded-full border-2 border-purple-400 shadow-sm" src="/lovable-uploads/b9d2ea2e-cc3e-4fc4-b6c3-3ce8921aa796.jpg" />
         <span className="font-extrabold tracking-tight sm:text-2xl bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent font-sans text-base">Auto  AI-Emotion Detect</span>
