@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       />
       <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-slate-100">
+          <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg"> {/* was text-slate-100 */}
             <Clock className="h-5 w-5" />
             Real-Time Activity
           </CardTitle>
@@ -66,12 +66,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       </Card>
       <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-slate-100">
+          <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
             <TrendingUp className="h-5 w-5" />
             AI Insights
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-slate-300 text-sm space-y-2">
+        <CardContent className="text-slate-300 text-xs sm:text-sm space-y-2">
           <p>• Monitor peak unhappy exit times</p>
           <p>• Consider staff training during high-stress periods</p>
           <p>• Implement immediate follow-up for dissatisfied customers</p>

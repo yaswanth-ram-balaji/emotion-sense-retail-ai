@@ -28,7 +28,7 @@ const JourneyTracking: React.FC<JourneyTrackingProps> = ({
   return (
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
-        <CardTitle className="text-slate-100 text-base sm:text-lg">Customer Journey</CardTitle>
+        <CardTitle className="text-slate-100 text-base sm:text-lg md:text-xl">Customer Journey</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
@@ -36,7 +36,7 @@ const JourneyTracking: React.FC<JourneyTrackingProps> = ({
             <div className="text-xs sm:text-sm text-slate-400 mb-1">Entry</div>
             {entryEmotion ? (
               <>
-                <div className="text-xl sm:text-2xl">{getEmotionEmoji(entryEmotion)}</div>
+                <div className="text-lg sm:text-xl">{getEmotionEmoji(entryEmotion)}</div>
                 <div className={`text-xs sm:text-sm font-medium capitalize ${getEmotionColor(entryEmotion)}`}>
                   {entryEmotion}
                 </div>
@@ -52,7 +52,7 @@ const JourneyTracking: React.FC<JourneyTrackingProps> = ({
             <div className="text-xs sm:text-sm text-slate-400 mb-1">Exit</div>
             {exitEmotion ? (
               <>
-                <div className="text-xl sm:text-2xl">{getEmotionEmoji(exitEmotion)}</div>
+                <div className="text-lg sm:text-xl">{getEmotionEmoji(exitEmotion)}</div>
                 <div className={`text-xs sm:text-sm font-medium capitalize ${getEmotionColor(exitEmotion)}`}>
                   {exitEmotion}
                 </div>
@@ -71,7 +71,7 @@ const JourneyTracking: React.FC<JourneyTrackingProps> = ({
                 ) : (
                   <TrendingDown className="h-4 w-4 text-red-400" />
                 )}
-                <span className={`font-medium ${getSatisfactionColor(satisfactionResult.satisfaction)}`}>
+                <span className={`font-medium ${getSatisfactionColor(satisfactionResult.satisfaction)} text-sm sm:text-base`}>
                   {satisfactionResult.satisfaction}
                 </span>
               </div>

@@ -29,7 +29,7 @@ const CurrentEmotion: React.FC<CurrentEmotionProps> = ({
   return (
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-100">
+        <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg md:text-xl">
           <Activity className="h-5 w-5" />
           Live AI Detection
         </CardTitle>
@@ -37,12 +37,12 @@ const CurrentEmotion: React.FC<CurrentEmotionProps> = ({
       <CardContent className="text-center space-y-4">
         {emotion ? (
           <>
-            <div className="text-6xl mb-2">{getEmotionEmoji(emotion)}</div>
-            <div className={`text-2xl font-bold capitalize ${getEmotionColor(emotion)}`}>
+            <div className="text-4xl sm:text-5xl mb-2">{getEmotionEmoji(emotion)}</div>
+            <div className={`text-lg sm:text-2xl font-bold capitalize ${getEmotionColor(emotion)}`}>
               {emotion}
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs sm:text-sm">
                 <span className="text-slate-400">Confidence</span>
                 <span className="text-slate-300">{(Number(confidence) * 100).toFixed(1)}%</span>
               </div>
@@ -50,7 +50,7 @@ const CurrentEmotion: React.FC<CurrentEmotionProps> = ({
             </div>
             {sortedScores.length > 0 && (
               <div className="pt-2">
-                <div className="text-sm text-slate-400 font-semibold">All emotion scores:</div>
+                <div className="text-xs sm:text-sm text-slate-400 font-semibold">All emotion scores:</div>
                 <div className="flex flex-wrap justify-center gap-1 mt-1">
                   {sortedScores.map(([em, score]) => (
                     <span
@@ -74,9 +74,9 @@ const CurrentEmotion: React.FC<CurrentEmotionProps> = ({
           </>
         ) : (
           <div className="py-8 text-slate-400">
-            <div className="text-4xl mb-2">🎯</div>
+            <div className="text-3xl sm:text-4xl mb-2">🎯</div>
             <p>No emotion detected</p>
-            <p className="text-sm">Enable auto-detection or capture manually</p>
+            <p className="text-xs sm:text-sm">Enable auto-detection or capture manually</p>
           </div>
         )}
       </CardContent>

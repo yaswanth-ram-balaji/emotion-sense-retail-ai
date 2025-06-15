@@ -46,9 +46,7 @@ interface MainContentLayoutProps {
 const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100">
-        Emotion Metrics
-      </CardTitle>
+      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">Emotion Metrics</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="space-y-4">
@@ -101,9 +99,7 @@ const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
 const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100">
-        Customer Satisfaction
-      </CardTitle>
+      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">Customer Satisfaction</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="text-center">
@@ -129,7 +125,7 @@ const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
 const SidebarRealTimeCard = ({ emotionHistory }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100">
+      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
         <Clock className="h-5 w-5" />
         Real-Time Activity
       </CardTitle>
@@ -143,7 +139,7 @@ const SidebarRealTimeCard = ({ emotionHistory }) => (
 const AnalyticsTrendsCard = ({ emotionHistory, autoCapture }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100">
+      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
         Emotion Trends
         {!autoCapture && (
           <Badge variant="outline" className="ml-2">
@@ -165,12 +161,12 @@ const AnalyticsHeatmapCard = ({ emotionHistory }) => (
 const SidebarInsightsCard = () => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100">
+      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
         <TrendingUp className="h-5 w-5" />
         AI Insights
       </CardTitle>
     </CardHeader>
-    <CardContent className="text-slate-300 text-sm space-y-2">
+    <CardContent className="text-slate-300 text-xs sm:text-sm space-y-2">
       <p>• Monitor peak unhappy exit times</p>
       <p>• Consider staff training during high-stress periods</p>
       <p>• Implement immediate follow-up for dissatisfied customers</p>
