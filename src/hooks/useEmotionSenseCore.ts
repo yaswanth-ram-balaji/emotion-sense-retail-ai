@@ -1,7 +1,3 @@
-
-// useEmotionSenseCore.ts
-// This file now orchestrates between modules in useEmotionSense/
-
 import { useState, useEffect, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +5,6 @@ import {
   getBackendUrl,
   checkBackendConnection,
   loadEmotionHistory,
-  extractDemographicsFromBackend,
   resetSessionState,
 } from './useEmotionSense';
 import { extractAgeGender } from '@/utils/demographics';
@@ -47,10 +42,9 @@ export function useEmotionSenseCore() {
   const [useUpload, setUseUpload] = useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
-  const [ageGuess, setAgeGuess] = useState<number | null>(null);
-  const [genderGuess, setGenderGuess] = useState<string | null>(null);
+  // const [ageGuess, setAgeGuess] = useState<number | null>(null);
+  // const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
-  // Use imported helper for backend connection check
   useEffect(() => {
     checkBackendConnection(setBackendStatus);
     loadEmotionHistory(backendStatus, setEmotionHistory);
@@ -77,7 +71,6 @@ export function useEmotionSenseCore() {
     // eslint-disable-next-line
   }, [autoCapture, backendStatus]);
 
-  // Get backend URL from helper
   const backendUrl = getBackendUrl(backendStatus);
 
   const captureImage = async (): Promise<string> => {
@@ -140,24 +133,17 @@ export function useEmotionSenseCore() {
       const emotionData = await emotionResponse.json();
       console.log('Emotion analysis response (full):', emotionData);
 
-      // LOG RAW emotionData from backend for debug
-      console.log("[DEBUG] Full backend emotionData (camera):", emotionData);
-
-      // Demographic extraction
-      const { age, gender } = extractDemographicsFromBackend(emotionData);
-
-      setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
-      setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
-
-      console.log("[DEBUG] Setting ageGuess:", age, "genderGuess:", gender);
-
-      if ((age === null || Number.isNaN(age)) && (!gender || gender === "null" || gender === "None")) {
-        toast({
-          title: "No Demographic Data",
-          description: "Could not extract age/gender from backend response.",
-          variant: "default"
-        });
-      }
+      // Demographic extraction - REMOVED
+      // const { age, gender } = extractDemographicsFromBackend(emotionData);
+      // setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
+      // setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
+      // if ((age === null || Number.isNaN(age)) && (!gender || gender === "null" || gender === "None")) {
+      //   toast({
+      //     title: "No Demographic Data",
+      //     description: "Could not extract age/gender from backend response.",
+      //     variant: "default"
+      //   });
+      // }
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
@@ -342,7 +328,6 @@ export function useEmotionSenseCore() {
     }
   };
 
-  // Use imported helper for session reset to reduce code duplication
   const resetSession = () => {
     resetSessionState({
       setCurrentEmotion,
@@ -383,7 +368,6 @@ export function useEmotionSenseCore() {
     // eslint-disable-next-line
   }, []);
 
-  // Helper: When toggling between modes (camera/upload), reset refs/photos
   const handleUseUploadToggle = () => {
     setUseUpload(prev => {
       if (!prev) { setPhotoUrl(null); }
@@ -391,14 +375,12 @@ export function useEmotionSenseCore() {
     });
   };
 
-  // When switching back to camera, remove upload photo
   useEffect(() => {
     if (!useUpload) {
       setPhotoUrl(null);
     }
   }, [useUpload]);
 
-  // Emotion detection for uploaded image: onPhotoDetect triggers the same backend flow but uses the photoUrl
   const detectEmotionFromPhoto = async () => {
     if (!photoUrl) return;
     setIsAnalyzing(true);
@@ -440,16 +422,10 @@ export function useEmotionSenseCore() {
       const emotionData = await emotionResponse.json();
       console.log('Photo emotion analysis response (full):', emotionData);
 
-      // LOG RAW emotionData from backend for debug
-      console.log("[DEBUG] Full backend emotionData (photo):", emotionData);
-
-      // Demographic extraction
-      const { age, gender } = extractDemographicsFromBackend(emotionData);
-
-      setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
-      setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
-
-      console.log("[DEBUG] Setting ageGuess:", age, "genderGuess:", gender);
+      // Demographic extraction - REMOVED
+      // const { age, gender } = extractDemographicsFromBackend(emotionData);
+      // setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
+      // setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
@@ -471,7 +447,6 @@ export function useEmotionSenseCore() {
     }
   };
 
-  // Realtime listener for "unhappy" emotions
   useEffect(() => {
     const channel = supabase
       .channel("public:emotion_logs")
@@ -484,7 +459,6 @@ export function useEmotionSenseCore() {
         },
         (payload) => {
           const newEntry = payload.new;
-          // We only care about exits with unhappy emotions
           if (
             newEntry &&
             newEntry.type === "exit" &&
@@ -505,12 +479,6 @@ export function useEmotionSenseCore() {
     };
   }, []);
 
-  // Helper to reset demographic guesses
-  const resetDemographics = () => {
-    setAgeGuess(null);
-    setGenderGuess(null);
-  };
-
   return {
     currentEmotion,
     emotionConfidence,
@@ -530,8 +498,6 @@ export function useEmotionSenseCore() {
     useUpload,
     photoUrl,
     faceBlur,
-    ageGuess,
-    genderGuess,
     setSelectedModel,
     setAutoCapture,
     setFullscreen,
@@ -546,5 +512,3 @@ export function useEmotionSenseCore() {
     retryBackendConnection,
   };
 }
-
-// NOTE: This file is now 630+ lines long and should be refactored into smaller, focused hooks and helpers for future maintainability.
