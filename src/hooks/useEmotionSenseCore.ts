@@ -133,18 +133,6 @@ export function useEmotionSenseCore() {
       const emotionData = await emotionResponse.json();
       console.log('Emotion analysis response (full):', emotionData);
 
-      // Demographic extraction - REMOVED
-      // const { age, gender } = extractDemographicsFromBackend(emotionData);
-      // setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
-      // setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
-      // if ((age === null || Number.isNaN(age)) && (!gender || gender === "null" || gender === "None")) {
-      //   toast({
-      //     title: "No Demographic Data",
-      //     description: "Could not extract age/gender from backend response.",
-      //     variant: "default"
-      //   });
-      // }
-
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
@@ -421,11 +409,6 @@ export function useEmotionSenseCore() {
       }
       const emotionData = await emotionResponse.json();
       console.log('Photo emotion analysis response (full):', emotionData);
-
-      // Demographic extraction - REMOVED
-      // const { age, gender } = extractDemographicsFromBackend(emotionData);
-      // setAgeGuess(age !== null && !Number.isNaN(age) ? age : null);
-      // setGenderGuess(gender && gender !== "null" && gender !== "None" ? gender : null);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);

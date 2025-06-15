@@ -1,7 +1,6 @@
 
 // Explicitly export backend helpers and session helpers
 export * from "./backendApi";
-export * from "./demographicUtils";
 export * from "./sessionHelpers";
 
 // Only re-export needed helpers (for useEmotionSenseCore)

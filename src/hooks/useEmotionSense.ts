@@ -1,7 +1,7 @@
 
 import { useEmotionSenseCore } from "./useEmotionSenseCore";
 
-// Re-export helpers needed by useEmotionSenseCore and other modules
+// ONLY re-export backend/session helpers (no demographics)
 export { getBackendUrl, checkBackendConnection, loadEmotionHistory } from "./useEmotionSense/index";
 export { resetSessionState } from "./useEmotionSense/index";
 
