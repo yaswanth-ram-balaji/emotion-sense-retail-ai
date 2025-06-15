@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { Camera, Fullscreen, Upload } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -11,10 +10,11 @@ interface CameraFeedProps {
   fullscreen?: boolean;
   onToggleFullscreen?: () => void;
   photoUrl?: string | null;
+  faceBlur?: boolean; // add prop
 }
 
 const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
-  ({ className, selectedDeviceId, onPhotoUpload, showUpload, fullscreen, onToggleFullscreen, photoUrl }, ref) => {
+  ({ className, selectedDeviceId, onPhotoUpload, showUpload, fullscreen, onToggleFullscreen, photoUrl, faceBlur }, ref) => {
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const videoRef = (ref as React.RefObject<HTMLVideoElement>) || localVideoRef;
     const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
@@ -123,9 +123,28 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
           {/* Overlay UI */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Bigger Face detection frame */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-96 border-4 border-green-400/70 rounded-lg transition-all bg-green-400/5">
+            <div
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-96 border-4 border-green-400/70 rounded-lg transition-all bg-green-400/5"
+              style={{
+                overflow: 'hidden'
+              }}
+            >
+              {/* Blur overlay if faceBlur mode is on */}
+              {faceBlur && (
+                <div className="absolute inset-0 z-10"
+                  style={{
+                    backdropFilter: 'blur(18px)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                    background: 'rgba(30, 41, 59, 0.10)',
+                    borderRadius: 'inherit',
+                  }}
+                ></div>
+              )}
+
               <div className="absolute -top-8 left-0 bg-green-400/20 backdrop-blur-sm rounded px-3 py-1">
-                <span className="text-green-400 text-sm font-medium">Face Detection Zone</span>
+                <span className="text-green-400 text-sm font-medium">
+                  Face Detection Zone{faceBlur ? " (Blurred)" : ""}
+                </span>
               </div>
             </div>
             {/* Corner indicators */}

@@ -62,6 +62,7 @@ const Index = () => {
   const [useUpload, setUseUpload] = useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
+  const [faceBlur, setFaceBlur] = useState<boolean>(false);
 
   // Check backend connectivity
   const checkBackendConnection = async () => {
@@ -568,6 +569,20 @@ const Index = () => {
           onDeviceChange={setSelectedDeviceId}
         />
 
+        {/* Face Blur Mode Control */}
+        <div className="flex items-center gap-2 justify-end">
+          <label className="text-slate-300 text-sm flex items-center gap-2 select-none" htmlFor="face-blur-toggle">
+            <input
+              id="face-blur-toggle"
+              type="checkbox"
+              className="mr-1 h-4 w-4 accent-purple-500"
+              checked={faceBlur}
+              onChange={e => setFaceBlur(e.target.checked)}
+            />
+            Face Blur / Anonymization Mode
+          </label>
+        </div>
+
         <MainContentLayout
           useUpload={useUpload}
           cameraDevices={cameraDevices}
@@ -593,6 +608,7 @@ const Index = () => {
           emotionConfidence={emotionConfidence}
           satisfactionResult={satisfactionResult}
           emotionScores={currentEmotionScores}
+          faceBlur={faceBlur}
         />
       </div>
     </div>
