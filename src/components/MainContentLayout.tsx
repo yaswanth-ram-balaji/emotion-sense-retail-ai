@@ -3,7 +3,7 @@ import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
 import CameraPanel from "@/components/CameraPanel";
 import JourneyTracking from "@/components/JourneyTracking";
-import { useMediaQuery } from "use-media-query-hook";
+import LiveAIDetectionCard from "@/components/LiveAIDetectionCard";
 
 // Extract necessary sections from AnalyticsDashboard and Sidebar for ordering
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -262,7 +262,7 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
     return "text-yellow-400";
   };
 
-  // Media query for mobile: max-width 1023px (corresponds to <lg: 1024px)
+  // Media query for mobile: max-width 1023px
   const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
   if (isMobile) {
@@ -291,8 +291,9 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
             cameraVideoRef={cameraVideoRef}
           />
         </div>
-        {/* 2. Live AI Detection (repeat main video/card to clarify separation, or put only video if desired) */}
-        {/* If you want different visual, split CameraFeed from CameraPanel */}
+
+        {/* 2. Live AI Detection (new card based on user ref image) */}
+        <LiveAIDetectionCard />
 
         {/* 3. Customer Journey */}
         <JourneyTracking
