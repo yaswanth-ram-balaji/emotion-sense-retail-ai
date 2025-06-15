@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { Camera, Fullscreen, Upload, SwitchCamera } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -11,7 +12,6 @@ interface CameraFeedProps {
   onToggleFullscreen?: () => void;
   photoUrl?: string | null;
   faceBlur?: boolean;
-  // New for camera flip
   onFlipCamera?: () => void;
   canFlip?: boolean;
   flipLabel?: string;
@@ -32,13 +32,14 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       canFlip,
       flipLabel
     },
-    ref // main ref from parent
+    ref
   ) => {
-    // Remove the use of localVideoRef. Always use the provided "ref" for the <video>
     const videoRef = (ref as React.RefObject<HTMLVideoElement>);
     const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+    const [cameraActive, setCameraActive] = useState(false);
+    const [cameraCheckPending, setCameraCheckPending] = useState(true);
 
-    // Device change logic (front/back camera)
+    // Device change logic
     useEffect(() => {
       (async () => {
         try {
@@ -53,6 +54,10 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
     // Camera stream start/stop logic
     useEffect(() => {
       let currentStream: MediaStream | null = null;
+      let isMounted = true;
+      setCameraActive(false);
+      setCameraCheckPending(true);
+
       const startCamera = async () => {
         try {
           if (photoUrl) return;
@@ -68,18 +73,28 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
           if (videoRef && videoRef.current) {
             videoRef.current.srcObject = stream;
+            setCameraActive(false); // Wait for "loadeddata"
           }
           currentStream = stream;
         } catch (error) {
           console.error('Error accessing camera:', error);
+          setCameraActive(false);
         }
       };
 
       startCamera();
+
+      // Fallback: after 2 seconds, if no 'loadeddata', mark as failed
+      const timeoutId = setTimeout(() => {
+        if (!cameraActive && isMounted && !photoUrl) setCameraCheckPending(false);
+      }, 2000);
+
       return () => {
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
         }
+        isMounted = false;
+        clearTimeout(timeoutId);
       };
     }, [selectedDeviceId, videoRef, photoUrl]);
 
@@ -109,11 +124,15 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       e.target.value = '';
     };
 
-    // Add fallback error if no camera is found or available.
-    const noCameraAvailable =
-      !photoUrl && (!videoRef || !videoRef.current || !videoRef.current.srcObject);
+    // Event: when video successfully streams, set cameraActive
+    const handleVideoLoadedData = () => {
+      setCameraActive(true);
+      setCameraCheckPending(false);
+    };
 
-    // Face zone size: larger (w-80 h-96)
+    // Error UI: only show if not photo mode, and camera is not active after timeout
+    const noCameraAvailable = !photoUrl && !cameraActive && !cameraCheckPending;
+
     return (
       <div
         ref={videoContainerRef}
@@ -136,6 +155,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               playsInline
               muted
               className="w-full h-full object-cover"
+              onLoadedData={handleVideoLoadedData}
             />
           )}
           {noCameraAvailable && (
