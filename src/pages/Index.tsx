@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Activity, AlertTriangle, Shield, BarChart3, Users, TrendingUp, Clock, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import EmotionDisplay from '@/components/EmotionDisplay';
 import EmotionChart from '@/components/EmotionChart';
 import EmotionLog from '@/components/EmotionLog';
 import AlertSection from '@/components/AlertSection';
-import { MockBackendService } from '@/services/mockBackend';
+// Removed: import { MockBackendService } from '@/services/mockBackend';
 
 interface EmotionData {
   timestamp: string;
@@ -35,10 +36,10 @@ const Index = () => {
   const [privacyOptOut, setPrivacyOptOut] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
-  const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking' | 'mock'>('checking');
+  const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking'); // REMOVED 'mock'
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const mockBackend = MockBackendService.getInstance();
+  // Removed: const mockBackend = MockBackendService.getInstance();
 
   // Check backend connectivity
   const checkBackendConnection = async () => {
@@ -55,8 +56,7 @@ const Index = () => {
     } catch (error) {
       console.error('Backend connection failed:', error);
     }
-    
-    // Try alternative localhost address
+
     try {
       const response = await fetch('http://127.0.0.1:8000/docs', {
         method: 'GET',
@@ -70,16 +70,13 @@ const Index = () => {
     } catch (error) {
       console.error('Backend connection failed on 127.0.0.1:', error);
     }
-    
-    // Fall back to mock backend
-    setBackendStatus('mock');
-    console.log('Using mock backend for development');
+
+    setBackendStatus('disconnected'); // Only real backend status
     return false;
   };
 
-  // Auto-capture functionality
   useEffect(() => {
-    if (autoCapture && !privacyOptOut && (backendStatus === 'connected' || backendStatus === 'mock')) {
+    if (autoCapture && !privacyOptOut && backendStatus === 'connected') {
       intervalRef.current = setInterval(() => {
         detectCurrentEmotion();
       }, 3000);
@@ -97,7 +94,6 @@ const Index = () => {
     };
   }, [autoCapture, privacyOptOut, backendStatus]);
 
-  // Check backend on mount
   useEffect(() => {
     checkBackendConnection();
     loadEmotionHistory();
@@ -109,13 +105,6 @@ const Index = () => {
 
   const loadEmotionHistory = async () => {
     try {
-      if (backendStatus === 'mock') {
-        const data = await mockBackend.getEmotionLog();
-        setEmotionHistory(data);
-        console.log('Loaded emotion history from mock backend:', data);
-        return;
-      }
-
       if (backendStatus === 'connected') {
         const response = await fetch(`${getBackendUrl()}/emotion-log`, {
           method: 'GET',
@@ -125,7 +114,7 @@ const Index = () => {
             'Content-Type': 'application/json',
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           setEmotionHistory(data);
@@ -139,84 +128,74 @@ const Index = () => {
 
   const captureImage = async (): Promise<string> => {
     if (!videoRef.current) throw new Error('Video not available');
-    
     const canvas = document.createElement('canvas');
     const video = videoRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas context not available');
-    
+
     ctx.drawImage(video, 0, 0);
     return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
   };
 
   const detectCurrentEmotion = async () => {
-    if (privacyOptOut || isAnalyzing || (backendStatus !== 'connected' && backendStatus !== 'mock')) return;
+    if (privacyOptOut || isAnalyzing || backendStatus !== 'connected') return;
 
     setIsAnalyzing(true);
-    
+
     try {
       console.log('Starting emotion detection...');
-      
       const imageBase64 = await captureImage();
       console.log('Image captured, processing...');
-      
+
       let emotion: string;
       let confidence: number;
 
-      if (backendStatus === 'mock') {
-        // Use mock backend
-        const faceData = await mockBackend.detectFace(imageBase64);
-        const emotionData = await mockBackend.analyzeEmotion(faceData.face_crop_base64);
-        emotion = emotionData.emotion;
-        confidence = emotionData.confidence;
-      } else {
-        // Use real backend
-        // Step 1: Detect face with proper headers
-        const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ image_base64: imageBase64 })
-        });
+      // Only real backend now
+      // Step 1: Detect face with proper headers
+      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: imageBase64 })
+      });
 
-        if (!faceResponse.ok) {
-          throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
-        }
-        
-        const faceData = await faceResponse.json();
-        console.log('Face detection response:', faceData);
-        
-        if (!faceData.face_crop_base64) {
-          throw new Error('No face detected in image');
-        }
-
-        // Step 2: Analyze emotion
-        const emotionResponse = await fetch(`${getBackendUrl()}/analyze-emotion`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
-        });
-
-        if (!emotionResponse.ok) {
-          throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
-        }
-        
-        const emotionData = await emotionResponse.json();
-        console.log('Emotion analysis response:', emotionData);
-        
-        emotion = emotionData.emotion;
-        confidence = emotionData.confidence || 0.85;
+      if (!faceResponse.ok) {
+        throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
       }
+
+      const faceData = await faceResponse.json();
+      console.log('Face detection response:', faceData);
+
+      if (!faceData.face_crop_base64) {
+        throw new Error('No face detected in image');
+      }
+
+      // Step 2: Analyze emotion
+      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64 })
+      });
+
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
+      }
+
+      const emotionData = await emotionResponse.json();
+      console.log('Emotion analysis response:', emotionData);
+
+      emotion = emotionData.emotion;
+      confidence = emotionData.confidence || 0.85;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
@@ -225,14 +204,13 @@ const Index = () => {
 
     } catch (error) {
       console.error('Error in emotion detection:', error);
-      
-      // Check if backend is still connected
+
       const isConnected = await checkBackendConnection();
-      if (!isConnected && backendStatus !== 'mock') {
+      if (!isConnected) {
         toast({
           title: "Backend Disconnected",
-          description: "Using mock backend for demo purposes",
-          variant: "default"
+          description: "Backend connection lost. Please check your FastAPI server.",
+          variant: "destructive"
         });
         setAutoCapture(false);
       } else if (!autoCapture) {
@@ -260,73 +238,59 @@ const Index = () => {
     if (backendStatus === 'disconnected') {
       toast({
         title: "Backend Not Available",
-        description: "Please start the FastAPI server or use mock mode for testing",
+        description: "Please start the FastAPI server.",
         variant: "destructive"
       });
       return;
     }
 
     setIsAnalyzing(true);
-    
+
     try {
       console.log(`Starting ${type} emotion analysis...`);
-      
       const imageBase64 = await captureImage();
-      
       let emotion: string;
       let confidence: number;
 
-      if (backendStatus === 'mock') {
-        // Use mock backend
-        const faceData = await mockBackend.detectFace(imageBase64);
-        const emotionData = await mockBackend.analyzeEmotion(faceData.face_crop_base64);
-        emotion = emotionData.emotion;
-        confidence = emotionData.confidence;
-        
-        // Add to mock backend log
-        mockBackend.addToEmotionLog(emotion, confidence, type);
-      } else {
-        // Use real backend
-        // Step 1: Detect face
-        const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ image_base64: imageBase64 })
-        });
+      // Only real backend logic
+      // Step 1: Detect face
+      const faceResponse = await fetch(`${getBackendUrl()}/detect-face`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: imageBase64 })
+      });
 
-        if (!faceResponse.ok) {
-          throw new Error(`Face detection failed: ${faceResponse.status}`);
-        }
-        
-        const faceData = await faceResponse.json();
-        
-        if (!faceData.face_crop_base64) {
-          throw new Error('No face detected in image');
-        }
-
-        // Step 2: Analyze emotion
-        const emotionResponse = await fetch(`${getBackendUrl()}/analyze-emotion`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ face_crop_base64: faceData.face_crop_base64 })
-        });
-
-        if (!emotionResponse.ok) {
-          throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
-        }
-        
-        const emotionData = await emotionResponse.json();
-        emotion = emotionData.emotion;
-        confidence = emotionData.confidence || 0.85;
+      if (!faceResponse.ok) {
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
       }
+
+      const faceData = await faceResponse.json();
+
+      if (!faceData.face_crop_base64) {
+        throw new Error('No face detected in image');
+      }
+
+      // Step 2: Analyze emotion
+      const emotionResponse = await fetch(`${getBackendUrl()}/analyze_emotion`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: faceData.face_crop_base64 })
+      });
+
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
+      }
+      const emotionData = await emotionResponse.json();
+      emotion = emotionData.emotion;
+      confidence = emotionData.confidence || 0.85;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
@@ -337,7 +301,6 @@ const Index = () => {
         setExitEmotion(emotion);
       }
 
-      // Add to history
       const newEntry: EmotionData = {
         timestamp: new Date().toISOString(),
         emotion,
@@ -346,14 +309,12 @@ const Index = () => {
       };
       setEmotionHistory(prev => [newEntry, ...prev].slice(0, 50));
 
-      // Track unhappy exits for alerts
       if (type === 'exit' && (emotion === 'angry' || emotion === 'sad' || emotion === 'disgust' || emotion === 'fear')) {
         setUnhappyCount(prev => prev + 1);
       }
 
-      const backendType = backendStatus === 'mock' ? '(Demo Mode)' : '';
       toast({
-        title: `${type === 'entry' ? 'Entry' : 'Exit'} Emotion Captured ${backendType}`,
+        title: `${type === 'entry' ? 'Entry' : 'Exit'} Emotion Captured`,
         description: `Customer appears ${emotion.toLowerCase()} (${(confidence * 100).toFixed(1)}% confidence)`
       });
 
@@ -361,7 +322,7 @@ const Index = () => {
 
     } catch (error) {
       console.error('Error analyzing emotion:', error);
-      
+
       toast({
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Could not analyze emotion",
@@ -385,9 +346,8 @@ const Index = () => {
     try {
       let data: SatisfactionResult;
 
-      if (backendStatus === 'mock') {
-        data = await mockBackend.compareEmotions(entryEmotion, exitEmotion);
-      } else if (backendStatus === 'connected') {
+      // Only real backend used
+      if (backendStatus === 'connected') {
         const response = await fetch(`${getBackendUrl()}/compare-emotion`, {
           method: 'POST',
           mode: 'cors',
@@ -404,31 +364,14 @@ const Index = () => {
           throw new Error('Backend comparison failed');
         }
       } else {
-        // Fallback logic
-        const positiveEmotions = ['happy', 'surprise', 'neutral'];
-        const negativeEmotions = ['angry', 'sad', 'disgust', 'fear'];
-        
-        const isPositiveExit = positiveEmotions.includes(exitEmotion.toLowerCase());
-        const isNegativeExit = negativeEmotions.includes(exitEmotion.toLowerCase());
-        
-        let satisfaction = 'Neutral';
-        if (isPositiveExit) {
-          satisfaction = 'Satisfied';
-        } else if (isNegativeExit) {
-          satisfaction = 'Unhappy Exit';
-        }
-        
-        data = {
-          satisfaction,
-          delta: entryEmotion === exitEmotion ? 'No Change' : `${entryEmotion} → ${exitEmotion}`
-        };
+        // Fallback logic (should never hit)
+        data = { satisfaction: "Unknown", delta: "N/A" };
       }
 
       setSatisfactionResult(data);
 
-      const backendType = backendStatus === 'mock' ? ' (Demo Mode)' : '';
       toast({
-        title: `Satisfaction Analysis Complete${backendType}`,
+        title: `Satisfaction Analysis Complete`,
         description: "Customer journey analyzed successfully"
       });
 
@@ -459,12 +402,6 @@ const Index = () => {
         description: "Successfully connected to emotion detection server"
       });
       loadEmotionHistory();
-    } else if (backendStatus === 'mock') {
-      toast({
-        title: "Using Demo Mode",
-        description: "Mock backend active - great for testing the interface!",
-        variant: "default"
-      });
     } else {
       toast({
         title: "Connection Failed",
@@ -484,8 +421,8 @@ const Index = () => {
             <span className="text-blue-100 text-sm">
               Real-Time AI Emotion Detection for Customer Experience Enhancement
             </span>
-            <Badge variant={backendStatus === 'connected' ? 'default' : backendStatus === 'mock' ? 'secondary' : 'destructive'}>
-              Backend: {backendStatus === 'mock' ? 'Demo Mode' : backendStatus}
+            <Badge variant={backendStatus === 'connected' ? 'default' : 'destructive'}>
+              Backend: {backendStatus}
             </Badge>
           </div>
           <div className="flex items-center gap-3">
@@ -521,27 +458,7 @@ const Index = () => {
         </div>
       )}
 
-      {/* Demo Mode Banner */}
-      {backendStatus === 'mock' && (
-        <div className="bg-yellow-600/20 backdrop-blur-sm border-b border-yellow-500/20 p-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Activity className="h-5 w-5 text-yellow-400" />
-              <span className="text-yellow-100 text-sm">
-                Demo Mode Active - Using simulated emotion detection for testing
-              </span>
-            </div>
-            <Button 
-              onClick={retryBackendConnection}
-              variant="outline" 
-              size="sm"
-              className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
-            >
-              Check Real Backend
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Removed Demo Mode Banner */}
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
@@ -566,9 +483,6 @@ const Index = () => {
                 <CardTitle className="flex items-center gap-2 text-slate-100">
                   <Camera className="h-5 w-5" />
                   Live AI Emotion Detection
-                  {backendStatus === 'mock' && (
-                    <Badge variant="secondary">Demo Mode</Badge>
-                  )}
                   {backendStatus === 'disconnected' && (
                     <Badge variant="destructive">Offline</Badge>
                   )}
@@ -671,8 +585,8 @@ const Index = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-300">Backend Status</span>
-                    <Badge variant={backendStatus === 'connected' ? "default" : backendStatus === 'mock' ? "secondary" : "destructive"}>
-                      {backendStatus === 'mock' ? 'Demo' : backendStatus}
+                    <Badge variant={backendStatus === 'connected' ? "default" : "destructive"}>
+                      {backendStatus}
                     </Badge>
                   </div>
                 </CardContent>
