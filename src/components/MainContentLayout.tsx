@@ -1,11 +1,7 @@
-
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
 import CameraPanel from "@/components/CameraPanel";
-import EmotionHeatmap from "@/components/EmotionHeatmap";
-import EmotionChart from "@/components/EmotionChart";
-import JourneyTracking from "@/components/JourneyTracking";
 
 interface MainContentLayoutProps {
   useUpload: boolean;
@@ -36,7 +32,6 @@ interface MainContentLayoutProps {
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
-// Responsive two-column scrollable dashboard layout, cards in left, metrics in right sidebar
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
   fullscreen,
@@ -65,10 +60,8 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   genderGuess,
   cameraVideoRef
 }) => (
-  <div className="flex w-full max-w-7xl mx-auto gap-6 mt-4 md:mb-10 mb-3 px-1">
-    {/* Main scrollable vertical modules */}
-    <section className="flex flex-col gap-6 flex-1 min-w-0">
-      {/* 1. Live AI Emotion Detection */}
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="lg:col-span-2 space-y-6">
       <CameraPanel
         useUpload={useUpload}
         fullscreen={fullscreen}
@@ -87,40 +80,26 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         entryEmotion={entryEmotion}
         exitEmotion={exitEmotion}
         faceBlur={faceBlur}
-        cameraVideoRef={cameraVideoRef}
+        cameraVideoRef={cameraVideoRef} // pass ref down
       />
-      {/* 2. Emotion Heatmap */}
-      <EmotionHeatmap emotionHistory={emotionHistory} />
-      {/* 3. Emotion Trends (bar and pie) */}
-      <EmotionChart data={emotionHistory} />
-      {/* 4/5. AnalyticsDashboard for Satisfaction % and Metrics */}
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
         unhappyCount={unhappyCount}
         autoCapture={autoCapture}
         backendStatus={backendStatus}
       />
-    </section>
-    {/* Sidebar: all right-panel metric cards, sticky on large screens */}
-    <aside className="flex flex-col gap-6 w-full md:w-[370px] max-w-[370px] min-w-[320px] md:sticky md:top-4">
-      <Sidebar
-        currentEmotion={currentEmotion}
-        emotionConfidence={emotionConfidence}
-        entryEmotion={entryEmotion}
-        exitEmotion={exitEmotion}
-        satisfactionResult={satisfactionResult}
-        emotionScores={emotionScores}
-        emotionHistory={emotionHistory}
-        ageGuess={ageGuess}
-        genderGuess={genderGuess}
-      />
-      {/* JourneyTracking as separate card for "Customer Journey", matches screenshot */}
-      <JourneyTracking
-        entryEmotion={entryEmotion}
-        exitEmotion={exitEmotion}
-        satisfactionResult={satisfactionResult}
-      />
-    </aside>
+    </div>
+    <Sidebar
+      currentEmotion={currentEmotion}
+      emotionConfidence={emotionConfidence}
+      entryEmotion={entryEmotion}
+      exitEmotion={exitEmotion}
+      satisfactionResult={satisfactionResult}
+      emotionScores={emotionScores}
+      emotionHistory={emotionHistory}
+      ageGuess={ageGuess}
+      genderGuess={genderGuess}
+    />
   </div>
 );
 

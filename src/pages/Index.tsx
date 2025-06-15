@@ -1,17 +1,25 @@
-
 import React from "react";
 import { useEmotionSense } from '@/hooks/useEmotionSense';
-import AppSidebar from "@/components/AppSidebar";
 import MainContentLayout from "@/components/MainContentLayout";
+import MainHeader from "@/components/MainHeader";
 
-// The new main dashboard layout with glassy sidebar
 const Index = () => {
   const emotion = useEmotionSense();
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-      <AppSidebar useUpload={emotion.useUpload} setUseUpload={emotion.setUseUpload} />
-      <main className="flex-1 min-h-screen flex flex-col items-stretch p-8 bg-transparent overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <MainHeader
+          backendStatus={emotion.backendStatus}
+          selectedModel={emotion.selectedModel}
+          onModelChange={emotion.setSelectedModel}
+          unhappyCount={emotion.unhappyCount}
+          useUpload={emotion.useUpload}
+          setUseUpload={emotion.setUseUpload}
+          faceBlur={emotion.faceBlur}
+          setFaceBlur={emotion.setFaceBlur}
+          retryBackendConnection={emotion.retryBackendConnection}
+        />
         <MainContentLayout
           useUpload={emotion.useUpload}
           fullscreen={emotion.fullscreen}
@@ -38,7 +46,7 @@ const Index = () => {
           faceBlur={emotion.faceBlur}
           cameraVideoRef={emotion.videoRef}
         />
-      </main>
+      </div>
     </div>
   );
 };
