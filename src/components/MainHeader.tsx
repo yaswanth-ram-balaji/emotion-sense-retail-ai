@@ -1,4 +1,3 @@
-
 import React from "react";
 import BackendAlert from "@/components/BackendAlert";
 import AlertSection from "@/components/AlertSection";
@@ -8,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Camera, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-
 interface MainHeaderProps {
   backendStatus: "connected" | "disconnected" | "checking";
   selectedModel: string;
@@ -34,7 +32,6 @@ const getBackendDotColor = (status: string) => {
   if (status === "disconnected") return "bg-red-500";
   return "bg-yellow-400 animate-pulse";
 };
-
 const MainHeader: React.FC<MainHeaderProps> = ({
   backendStatus,
   selectedModel,
@@ -45,11 +42,9 @@ const MainHeader: React.FC<MainHeaderProps> = ({
   faceBlur,
   setFaceBlur,
   retryBackendConnection
-}) => (
-  <div className="relative">
+}) => <div className="relative">
     {/* --- Top-right backend status dot, moved further in mobile view --- */}
-    <span
-      className={`
+    <span className={`
         absolute 
         ${/* On small screens, move closer to true top-right; on desktop, keep more standard spacing */""}
         top-1 right-2
@@ -57,16 +52,11 @@ const MainHeader: React.FC<MainHeaderProps> = ({
         z-50
         w-4 h-4 rounded-full border-2 border-slate-900 shadow-lg
         ${getBackendDotColor(backendStatus)}
-      `}
-      title={backendStatus === "connected" ? "Backend Connected"
-        : backendStatus === "disconnected" ? "Backend Not Connected"
-        : "Backend Checking..."}
-      aria-label="Backend Status"
-    />
+      `} title={backendStatus === "connected" ? "Backend Connected" : backendStatus === "disconnected" ? "Backend Not Connected" : "Backend Checking..."} aria-label="Backend Status" />
 
     {/* --- Title and Tagline --- */}
     <div className="text-center space-y-2 sm:space-y-3 my-2">
-      <h1 className="font-extrabold font-sans tracking-tighter bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent text-2xl sm:text-3xl md:text-4xl lg:text-4xl transition-all duration-200">
+      <h1 className="font-extrabold font-sans tracking-tighter bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent sm:text-3xl md:text-4xl lg:text-4xl transition-all duration-200 text-xl">
         Retail AI-Emotion Detector
       </h1>
       <p className="text-slate-300 font-medium text-sm sm:text-base md:text-lg lg:text-lg max-w-2xl mx-auto leading-snug">
@@ -77,10 +67,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
     <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 py-4 px-2 rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4">
       {/* Camera/Upload Segmented Toggle */}
-      <ModeSegmentedButton
-        value={useUpload ? "upload" : "camera"}
-        onChange={v => setUseUpload(v === "upload")}
-      />
+      <ModeSegmentedButton value={useUpload ? "upload" : "camera"} onChange={v => setUseUpload(v === "upload")} />
 
       {/* Face Blur Toggle Minimal */}
       <div className="flex items-center gap-1 bg-violet-800/20 border border-violet-500 rounded-lg px-3 py-1.5 shadow-sm">
@@ -118,7 +105,5 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     {/* Alerts Section */}
     <AlertSection unhappyCount={unhappyCount} />
 
-  </div>
-);
-
+  </div>;
 export default MainHeader;
