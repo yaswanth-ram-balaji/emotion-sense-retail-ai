@@ -261,9 +261,11 @@ const Index = () => {
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
 
-      console.log(`Detected emotion: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}% confidence)`);
-      if (emotionScores) {
-        console.log('Emotion scores:', emotionScores);
+      console.log(
+        `Detected emotion: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}% confidence)`
+      );
+      if (emotionData.emotion_scores) {
+        console.log('Emotion scores:', emotionData.emotion_scores);
       }
     } catch (error) {
       console.error('Error in emotion detection:', error);
