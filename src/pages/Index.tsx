@@ -590,6 +590,7 @@ const Index = () => {
     setGenderGuess(null);
   };
 
+  // FIX: Make sure component returns parentheses and does not have stray brackets
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Privacy Banner/Header */}
@@ -669,7 +670,7 @@ const Index = () => {
           faceBlur={faceBlur}
           ageGuess={ageGuess}
           genderGuess={genderGuess}
-          cameraVideoRef={videoRef} {/* <<< NEW PROP */}
+          cameraVideoRef={videoRef}
         />
       </div>
     </div>
