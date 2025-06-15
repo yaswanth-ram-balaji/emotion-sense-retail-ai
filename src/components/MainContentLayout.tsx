@@ -47,8 +47,7 @@ interface MainContentLayoutProps {
 const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-base sm:text-lg bg-gradient-to-r from-green-400 via-fuchsia-400 to-blue-400 bg-clip-text text-transparent drop-shadow font-bold tracking-wider">
-        <TrendingUp className="h-5 w-5 text-green-300" />
+      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
         Joy & Unhappiness Scoreboard
       </CardTitle>
     </CardHeader>
@@ -103,8 +102,7 @@ const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
 const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-base sm:text-lg bg-gradient-to-r from-green-500 via-yellow-400 to-pink-500 bg-clip-text text-transparent font-extrabold tracking-widest animate-gradient">
-        <Users className="h-5 w-5 text-yellow-300" />
+      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
         Smiles & Satisfaction Barometer
       </CardTitle>
     </CardHeader>
@@ -132,8 +130,7 @@ const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
 const SidebarRealTimeCard = ({ emotionHistory }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-400 via-violet-400 to-pink-400 bg-clip-text text-transparent tracking-wide">
-        <Clock className="h-5 w-5 text-blue-300" />
+      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
         Pulse of the Moment
       </CardTitle>
     </CardHeader>
@@ -146,16 +143,11 @@ const SidebarRealTimeCard = ({ emotionHistory }) => (
 const AnalyticsTrendsCard = ({ emotionHistory, autoCapture }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-fuchsia-400 via-cyan-400 to-fuchsia-500 bg-clip-text text-transparent tracking-widest animate-gradient">
-        <TrendingUp className="h-5 w-5 text-fuchsia-300" />
+      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
         Emotional Waves & Trends
         {!autoCapture && (
           <span
-            className="ml-2 inline-flex items-center rounded-full border border-fuchsia-400 bg-fuchsia-900/10 px-3 py-0.5 text-xs font-semibold text-fuchsia-300 shadow transition hover:bg-fuchsia-800/90 hover:text-white focus:outline-none"
-            style={{
-              letterSpacing: "0.03em",
-              boxShadow: "0 1px 6px 0 #be4bfa33"
-            }}
+            className="ml-2 inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium text-fuchsia-600 bg-fuchsia-100"
           >
             Manual Mode
           </span>
@@ -176,8 +168,7 @@ const AnalyticsHeatmapCard = ({ emotionHistory }) => (
 const SidebarInsightsCard = () => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-yellow-300 bg-clip-text text-transparent">
-        <TrendingUp className="h-5 w-5 text-purple-300" />
+      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
         Actionable AI Superpowers
       </CardTitle>
     </CardHeader>
@@ -279,8 +270,11 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   if (isMobile) {
     return (
       <div className="flex flex-col gap-5">
-        {/* 1. Live AI Emotion Detection (Camera Panel header zone + status) */}
+        {/* 1. Live AI Emotion Detection */}
         <div>
+          <span className="block text-lg sm:text-xl font-semibold text-slate-200 mb-2">
+            Live AI Detection
+          </span>
           <CameraPanel
             useUpload={useUpload}
             fullscreen={fullscreen}
@@ -303,15 +297,8 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           />
         </div>
 
-        {/* 2. Live AI Detection */}
+        {/* 2. Live AI Detection real-time values */}
         <div className="pt-1">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-fuchsia-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent tracking-wide animate-gradient">
-              <span className="inline-block animate-bounce">✨</span>
-              Live AI Detection
-              <span className="inline-block animate-bounce">✨</span>
-            </span>
-          </div>
           <CurrentEmotion
             emotion={currentEmotion}
             confidence={emotionConfidence}
@@ -323,12 +310,9 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
 
         {/* 3. Customer Journey */}
         <div className="pt-1">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-yellow-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
-              <TrendingUp className="h-5 w-5 text-yellow-300" />
-              Customer Journey Map
-            </span>
-          </div>
+          <span className="block text-lg sm:text-xl font-semibold text-slate-200 mb-2">
+            Customer Journey Map
+          </span>
           <JourneyTracking
             entryEmotion={entryEmotion}
             exitEmotion={exitEmotion}
@@ -369,13 +353,12 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
     );
   }
 
-  // Updated desktop/tablet grid layout: Live AI Detection above Customer Journey
+  // Desktop/tablet normal section headings
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
         <div>
-          <span className="flex items-center text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-fuchsia-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
-            <span className="inline-block animate-bounce">✨</span>
+          <span className="block text-lg sm:text-2xl font-semibold text-slate-200 mb-2">
             Live AI Detection
           </span>
         </div>
@@ -399,12 +382,9 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           faceBlur={faceBlur}
           cameraVideoRef={cameraVideoRef}
         />
-        {/* Live AI Detection on desktop/tablet just like mobile */}
         <LiveAIDetectionCard />
-        {/* Customer Journey immediately after Live AI Detection */}
         <div>
-          <span className="flex items-center text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-yellow-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
-            <TrendingUp className="h-5 w-5 text-yellow-300" />
+          <span className="block text-lg sm:text-2xl font-semibold text-slate-200 mb-2">
             Customer Journey Map
           </span>
         </div>
@@ -416,7 +396,6 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           getEmotionColor={getEmotionColor}
           getSatisfactionColor={getSatisfactionColor}
         />
-        {/* AnalyticsDashboard (remaining card group) */}
         <AnalyticsDashboard
           emotionHistory={emotionHistory}
           unhappyCount={unhappyCount}
