@@ -1,16 +1,15 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
 interface AnalyticsMetricCardProps {
   emotionHistory: any[];
   unhappyCount: number;
 }
-
-const AnalyticsMetricCard: React.FC<AnalyticsMetricCardProps> = ({ emotionHistory, unhappyCount }) => (
-  <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+const AnalyticsMetricCard: React.FC<AnalyticsMetricCardProps> = ({
+  emotionHistory,
+  unhappyCount
+}) => <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="text-base sm:text-lg font-semibold text-slate-200">
+      <CardTitle className="text-base text-slate-200 font-bold sm:text-xl">
         Joy & Unhappiness Scoreboard
       </CardTitle>
     </CardHeader>
@@ -25,8 +24,8 @@ const AnalyticsMetricCard: React.FC<AnalyticsMetricCardProps> = ({ emotionHistor
           </div>
           <div className="w-full bg-slate-700 rounded-full h-2">
             <div className="bg-green-500 h-2 rounded-full" style={{
-              width: `${emotionHistory.length > 0 ? emotionHistory.filter(e => e.emotion === 'happy').length / emotionHistory.length * 100 : 0}%`
-            }}></div>
+            width: `${emotionHistory.length > 0 ? emotionHistory.filter(e => e.emotion === 'happy').length / emotionHistory.length * 100 : 0}%`
+          }}></div>
           </div>
         </div>
         <div>
@@ -36,13 +35,11 @@ const AnalyticsMetricCard: React.FC<AnalyticsMetricCardProps> = ({ emotionHistor
           </div>
           <div className="w-full bg-slate-700 rounded-full h-2">
             <div className="bg-red-500 h-2 rounded-full" style={{
-              width: `${emotionHistory.length > 0 ? unhappyCount / emotionHistory.length * 100 : 0}%`
-            }}></div>
+            width: `${emotionHistory.length > 0 ? unhappyCount / emotionHistory.length * 100 : 0}%`
+          }}></div>
           </div>
         </div>
       </div>
     </CardContent>
-  </Card>
-);
-
+  </Card>;
 export default AnalyticsMetricCard;
