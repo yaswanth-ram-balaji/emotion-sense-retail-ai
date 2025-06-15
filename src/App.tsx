@@ -1,4 +1,5 @@
 
+import AnoAI from "@/components/ui/animated-shader-background";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,10 +9,12 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/hooks/useAuth";
+
 // Removed ThemeSelector and ThemeProvider
 
 const App = () => (
   <TooltipProvider>
+    <AnoAI />
     <Toaster />
     <Sonner />
     <AuthProvider>
@@ -36,4 +39,3 @@ const App = () => (
 );
 
 export default App;
-

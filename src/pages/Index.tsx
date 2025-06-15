@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useEmotionSense } from '@/hooks/useEmotionSense';
 import MainContentLayout from "@/components/MainContentLayout";
@@ -7,8 +8,10 @@ const Index = () => {
   const emotion = useEmotionSense();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+    // Semi-translucent frosted glass wrapper with good padding
+    <div className="relative min-h-screen flex items-center justify-center">
+      <div className="max-w-7xl w-full mx-auto p-0 sm:p-6 space-y-6 bg-slate-900/70 backdrop-blur-lg rounded-lg shadow-2xl border border-slate-700"
+        style={{ boxShadow: "0 6px 24px 0 #1119, 0 1.5px 8px 0 #2a235a55" }}>
         <MainHeader
           backendStatus={emotion.backendStatus}
           selectedModel={emotion.selectedModel}
