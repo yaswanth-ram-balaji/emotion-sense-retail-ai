@@ -169,7 +169,7 @@ const Index = () => {
             </Card>
           </div>
         </div>
-        {/* Sidebar (1/3) */}
+        {/* Sidebar (1/3) - only here, not also in main */}
         <div className="col-span-1 w-full">
           <Sidebar
             emotion={emotion.currentEmotion}
