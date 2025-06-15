@@ -1,3 +1,4 @@
+
 import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -32,6 +33,7 @@ interface MainContentLayoutProps {
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
+// Main content area stacked in sections, glassy cards, padding, etc
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
   fullscreen,
@@ -60,46 +62,48 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   genderGuess,
   cameraVideoRef
 }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div className="lg:col-span-2 space-y-6">
-      <CameraPanel
-        useUpload={useUpload}
-        fullscreen={fullscreen}
-        setFullscreen={setFullscreen}
-        photoUrl={photoUrl}
-        setPhotoUrl={setPhotoUrl}
-        detectEmotionFromPhoto={detectEmotionFromPhoto}
-        isAnalyzing={isAnalyzing}
-        backendStatus={backendStatus}
-        autoCapture={autoCapture}
-        onAutoCaptureChange={onAutoCaptureChange}
-        onAnalyzeEntry={onAnalyzeEntry}
-        onAnalyzeExit={onAnalyzeExit}
-        onCompare={onCompare}
-        onReset={onReset}
-        entryEmotion={entryEmotion}
-        exitEmotion={exitEmotion}
-        faceBlur={faceBlur}
-        cameraVideoRef={cameraVideoRef} // pass ref down
-      />
+  <div className="max-w-5xl mx-auto w-full flex flex-col gap-8">
+    {/* Live AI Detection module, more prominent */}
+    <CameraPanel
+      useUpload={useUpload}
+      fullscreen={fullscreen}
+      setFullscreen={setFullscreen}
+      photoUrl={photoUrl}
+      setPhotoUrl={setPhotoUrl}
+      detectEmotionFromPhoto={detectEmotionFromPhoto}
+      isAnalyzing={isAnalyzing}
+      backendStatus={backendStatus}
+      autoCapture={autoCapture}
+      onAutoCaptureChange={onAutoCaptureChange}
+      onAnalyzeEntry={onAnalyzeEntry}
+      onAnalyzeExit={onAnalyzeExit}
+      onCompare={onCompare}
+      onReset={onReset}
+      entryEmotion={entryEmotion}
+      exitEmotion={exitEmotion}
+      faceBlur={faceBlur}
+      cameraVideoRef={cameraVideoRef}
+    />
+    {/* Analytics and activity to mimic collapsible style groupings */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
         unhappyCount={unhappyCount}
         autoCapture={autoCapture}
         backendStatus={backendStatus}
       />
+      <Sidebar
+        currentEmotion={currentEmotion}
+        emotionConfidence={emotionConfidence}
+        entryEmotion={entryEmotion}
+        exitEmotion={exitEmotion}
+        satisfactionResult={satisfactionResult}
+        emotionScores={emotionScores}
+        emotionHistory={emotionHistory}
+        ageGuess={ageGuess}
+        genderGuess={genderGuess}
+      />
     </div>
-    <Sidebar
-      currentEmotion={currentEmotion}
-      emotionConfidence={emotionConfidence}
-      entryEmotion={entryEmotion}
-      exitEmotion={exitEmotion}
-      satisfactionResult={satisfactionResult}
-      emotionScores={emotionScores}
-      emotionHistory={emotionHistory}
-      ageGuess={ageGuess}
-      genderGuess={genderGuess}
-    />
   </div>
 );
 
