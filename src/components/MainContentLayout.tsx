@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import EmotionChart from "@/components/EmotionChart";
 import EmotionHeatmap from "./EmotionHeatmap";
 import EmotionLog from "@/components/EmotionLog";
-import { Clock, TrendingUp } from "lucide-react";
+import { Clock, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import CurrentEmotion from "./CurrentEmotion"; // Add this import for using CurrentEmotion
 
@@ -47,7 +47,10 @@ interface MainContentLayoutProps {
 const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">Emotion Metrics</CardTitle>
+      <CardTitle className="flex items-center gap-2 text-base sm:text-lg bg-gradient-to-r from-green-400 via-fuchsia-400 to-blue-400 bg-clip-text text-transparent drop-shadow font-bold tracking-wider">
+        <TrendingUp className="h-5 w-5 text-green-300" />
+        Joy & Unhappiness Scoreboard
+      </CardTitle>
     </CardHeader>
     <CardContent>
       <div className="space-y-4">
@@ -100,7 +103,10 @@ const AnalyticsMetricCard = ({ emotionHistory, unhappyCount }) => (
 const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">Customer Satisfaction</CardTitle>
+      <CardTitle className="flex items-center gap-2 text-base sm:text-lg bg-gradient-to-r from-green-500 via-yellow-400 to-pink-500 bg-clip-text text-transparent font-extrabold tracking-widest animate-gradient">
+        <Users className="h-5 w-5 text-yellow-300" />
+        Smiles & Satisfaction Barometer
+      </CardTitle>
     </CardHeader>
     <CardContent>
       <div className="text-center">
@@ -126,9 +132,9 @@ const AnalyticsSatisfactionCard = ({ emotionHistory, unhappyCount }) => (
 const SidebarRealTimeCard = ({ emotionHistory }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
-        <Clock className="h-5 w-5" />
-        Real-Time Activity
+      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-400 via-violet-400 to-pink-400 bg-clip-text text-transparent tracking-wide">
+        <Clock className="h-5 w-5 text-blue-300" />
+        Pulse of the Moment
       </CardTitle>
     </CardHeader>
     <CardContent>
@@ -140,8 +146,9 @@ const SidebarRealTimeCard = ({ emotionHistory }) => (
 const AnalyticsTrendsCard = ({ emotionHistory, autoCapture }) => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
-        Emotion Trends
+      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-fuchsia-400 via-cyan-400 to-fuchsia-500 bg-clip-text text-transparent tracking-widest animate-gradient">
+        <TrendingUp className="h-5 w-5 text-fuchsia-300" />
+        Emotional Waves & Trends
         {!autoCapture && (
           <span
             className="ml-2 inline-flex items-center rounded-full border border-fuchsia-400 bg-fuchsia-900/10 px-3 py-0.5 text-xs font-semibold text-fuchsia-300 shadow transition hover:bg-fuchsia-800/90 hover:text-white focus:outline-none"
@@ -162,15 +169,16 @@ const AnalyticsTrendsCard = ({ emotionHistory, autoCapture }) => (
 );
 
 const AnalyticsHeatmapCard = ({ emotionHistory }) => (
+  // Section heading is inside EmotionHeatmap component
   <EmotionHeatmap emotionHistory={emotionHistory} />
 );
 
 const SidebarInsightsCard = () => (
   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-slate-100 text-base sm:text-lg">
-        <TrendingUp className="h-5 w-5" />
-        AI Insights
+      <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-extrabold bg-gradient-to-r from-purple-400 via-pink-500 to-yellow-300 bg-clip-text text-transparent">
+        <TrendingUp className="h-5 w-5 text-purple-300" />
+        Actionable AI Superpowers
       </CardTitle>
     </CardHeader>
     <CardContent className="text-slate-300 text-xs sm:text-sm space-y-2">
@@ -295,24 +303,41 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
           />
         </div>
 
-        {/* 2. Live AI Detection (show real time current emotion instead of static card) */}
-        <CurrentEmotion
-          emotion={currentEmotion}
-          confidence={emotionConfidence}
-          emotionScores={emotionScores}
-          getEmotionEmoji={getEmotionEmoji}
-          getEmotionColor={getEmotionColor}
-        />
+        {/* 2. Live AI Detection */}
+        <div className="pt-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-fuchsia-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent tracking-wide animate-gradient">
+              <span className="inline-block animate-bounce">✨</span>
+              Live AI Detection
+              <span className="inline-block animate-bounce">✨</span>
+            </span>
+          </div>
+          <CurrentEmotion
+            emotion={currentEmotion}
+            confidence={emotionConfidence}
+            emotionScores={emotionScores}
+            getEmotionEmoji={getEmotionEmoji}
+            getEmotionColor={getEmotionColor}
+          />
+        </div>
 
         {/* 3. Customer Journey */}
-        <JourneyTracking
-          entryEmotion={entryEmotion}
-          exitEmotion={exitEmotion}
-          satisfactionResult={satisfactionResult}
-          getEmotionEmoji={getEmotionEmoji}
-          getEmotionColor={getEmotionColor}
-          getSatisfactionColor={getSatisfactionColor}
-        />
+        <div className="pt-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-yellow-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
+              <TrendingUp className="h-5 w-5 text-yellow-300" />
+              Customer Journey Map
+            </span>
+          </div>
+          <JourneyTracking
+            entryEmotion={entryEmotion}
+            exitEmotion={exitEmotion}
+            satisfactionResult={satisfactionResult}
+            getEmotionEmoji={getEmotionEmoji}
+            getEmotionColor={getEmotionColor}
+            getSatisfactionColor={getSatisfactionColor}
+          />
+        </div>
 
         {/* 4. Emotion Metrics */}
         <AnalyticsMetricCard
@@ -348,6 +373,12 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
+        <div>
+          <span className="flex items-center text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-fuchsia-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
+            <span className="inline-block animate-bounce">✨</span>
+            Live AI Detection
+          </span>
+        </div>
         <CameraPanel
           useUpload={useUpload}
           fullscreen={fullscreen}
@@ -371,6 +402,12 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         {/* Live AI Detection on desktop/tablet just like mobile */}
         <LiveAIDetectionCard />
         {/* Customer Journey immediately after Live AI Detection */}
+        <div>
+          <span className="flex items-center text-lg sm:text-2xl font-extrabold bg-gradient-to-r from-yellow-400 via-green-300 to-fuchsia-400 bg-clip-text text-transparent mb-2 tracking-wider animate-gradient">
+            <TrendingUp className="h-5 w-5 text-yellow-300" />
+            Customer Journey Map
+          </span>
+        </div>
         <JourneyTracking
           entryEmotion={entryEmotion}
           exitEmotion={exitEmotion}
