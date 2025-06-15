@@ -3,6 +3,9 @@ import React from "react";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
 import CameraPanel from "@/components/CameraPanel";
+import EmotionHeatmap from "@/components/EmotionHeatmap";
+import EmotionChart from "@/components/EmotionChart";
+import JourneyTracking from "@/components/JourneyTracking";
 
 interface MainContentLayoutProps {
   useUpload: boolean;
@@ -33,7 +36,7 @@ interface MainContentLayoutProps {
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
-// Main content area stacked in sections, glassy cards, padding, etc
+// Responsive two-column scrollable dashboard layout, cards in left, metrics in right sidebar
 const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   useUpload,
   fullscreen,
@@ -62,36 +65,45 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   genderGuess,
   cameraVideoRef
 }) => (
-  <div className="max-w-5xl mx-auto w-full flex flex-col gap-8">
-    {/* Live AI Detection module, more prominent */}
-    <CameraPanel
-      useUpload={useUpload}
-      fullscreen={fullscreen}
-      setFullscreen={setFullscreen}
-      photoUrl={photoUrl}
-      setPhotoUrl={setPhotoUrl}
-      detectEmotionFromPhoto={detectEmotionFromPhoto}
-      isAnalyzing={isAnalyzing}
-      backendStatus={backendStatus}
-      autoCapture={autoCapture}
-      onAutoCaptureChange={onAutoCaptureChange}
-      onAnalyzeEntry={onAnalyzeEntry}
-      onAnalyzeExit={onAnalyzeExit}
-      onCompare={onCompare}
-      onReset={onReset}
-      entryEmotion={entryEmotion}
-      exitEmotion={exitEmotion}
-      faceBlur={faceBlur}
-      cameraVideoRef={cameraVideoRef}
-    />
-    {/* Analytics and activity to mimic collapsible style groupings */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="flex w-full max-w-7xl mx-auto gap-6 mt-4 md:mb-10 mb-3 px-1">
+    {/* Main scrollable vertical modules */}
+    <section className="flex flex-col gap-6 flex-1 min-w-0">
+      {/* 1. Live AI Emotion Detection */}
+      <CameraPanel
+        useUpload={useUpload}
+        fullscreen={fullscreen}
+        setFullscreen={setFullscreen}
+        photoUrl={photoUrl}
+        setPhotoUrl={setPhotoUrl}
+        detectEmotionFromPhoto={detectEmotionFromPhoto}
+        isAnalyzing={isAnalyzing}
+        backendStatus={backendStatus}
+        autoCapture={autoCapture}
+        onAutoCaptureChange={onAutoCaptureChange}
+        onAnalyzeEntry={onAnalyzeEntry}
+        onAnalyzeExit={onAnalyzeExit}
+        onCompare={onCompare}
+        onReset={onReset}
+        entryEmotion={entryEmotion}
+        exitEmotion={exitEmotion}
+        faceBlur={faceBlur}
+        cameraVideoRef={cameraVideoRef}
+      />
+      {/* 2. Emotion Heatmap */}
+      <EmotionHeatmap emotionHistory={emotionHistory} backendStatus={backendStatus} />
+      {/* 3. Emotion Trends (bar and pie) */}
+      <EmotionChart emotionHistory={emotionHistory} backendStatus={backendStatus} />
+      {/* 4/5. AnalyticsDashboard for Satisfaction % and Metrics */}
       <AnalyticsDashboard
         emotionHistory={emotionHistory}
         unhappyCount={unhappyCount}
         autoCapture={autoCapture}
         backendStatus={backendStatus}
       />
+    </section>
+
+    {/* Sidebar: all right-panel metric cards, sticky on large screens */}
+    <aside className="flex flex-col gap-6 w-full md:w-[370px] max-w-[370px] min-w-[320px] md:sticky md:top-4">
       <Sidebar
         currentEmotion={currentEmotion}
         emotionConfidence={emotionConfidence}
@@ -103,7 +115,14 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
         ageGuess={ageGuess}
         genderGuess={genderGuess}
       />
-    </div>
+      {/* JourneyTracking as separate card for "Customer Journey", matches screenshot */}
+      <JourneyTracking
+        entryEmotion={entryEmotion}
+        exitEmotion={exitEmotion}
+        satisfactionResult={satisfactionResult}
+        emotionHistory={emotionHistory}
+      />
+    </aside>
   </div>
 );
 
