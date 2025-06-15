@@ -64,7 +64,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
     </div>
 
     {/* --- ONE LINE: Controls Panel, ultra responsive --- */}
-    <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4 rounded-md px-0 py-[12px] my-[5px]">
+    <div className="min-w-full flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 border-2 border-purple-700 shadow-xl mb-2 mt-4 rounded-md px-0 my-[5px] py-[5px]">
       {/* Camera/Upload Segmented Toggle */}
       <ModeSegmentedButton value={useUpload ? "upload" : "camera"} onChange={v => setUseUpload(v === "upload")} />
 
