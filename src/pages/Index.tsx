@@ -50,6 +50,10 @@ const Index = () => {
   const [entryEmotion, setEntryEmotion] = useState<string>('');
   const [exitEmotion, setExitEmotion] = useState<string>('');
   const [satisfactionResult, setSatisfactionResult] = useState<SatisfactionResult | null>(null);
+
+  // ✅ ADD THIS: Add emotionHistory state
+  const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
+
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
