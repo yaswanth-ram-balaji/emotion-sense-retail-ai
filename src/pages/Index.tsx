@@ -17,6 +17,10 @@ import CameraControls from "@/components/CameraControls";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
 import PhotoUploader from "@/components/PhotoUploader";
+import HeaderBanner from "@/components/HeaderBanner";
+import BackendAlert from "@/components/BackendAlert";
+import ModeToggle from "@/components/ModeToggle";
+import MainContentLayout from "@/components/MainContentLayout";
 
 interface EmotionData {
   timestamp: string;
@@ -524,56 +528,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Privacy Banner */}
-      <div className="bg-blue-600/20 backdrop-blur-sm border-b border-blue-500/20 p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="h-5 w-5 text-blue-400" />
-            <span className="text-blue-100 text-sm">
-              Real-Time AI Emotion Detection for Customer Experience Enhancement
-            </span>
-            <Badge variant={backendStatus === 'connected' ? 'default' : 'destructive'}>
-              Backend: {backendStatus}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Model Selector (remains) */}
-            <span className="text-blue-100 text-sm">Model:</span>
-            <Select value={selectedModel} onValueChange={val => setSelectedModel(val)}>
-              <SelectTrigger className="w-[120px] bg-slate-900 border-blue-400">
-                <SelectValue>{emotionModels.find(m => m.value === selectedModel)?.label}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {emotionModels.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* Removed: Privacy Opt-Out */}
-          </div>
-        </div>
-      </div>
+      {/* Privacy Banner/Header */}
+      <HeaderBanner 
+        backendStatus={backendStatus}
+        selectedModel={selectedModel}
+        onModelChange={val => setSelectedModel(val)}
+      />
 
       {/* Backend Connection Alert */}
       {backendStatus === 'disconnected' && (
-        <div className="bg-red-600/20 backdrop-blur-sm border-b border-red-500/20 p-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              <span className="text-red-100 text-sm">
-                Backend server not connected. Start FastAPI server with: <code>uvicorn main:app --reload --host 0.0.0.0 --port 8000</code>
-              </span>
-            </div>
-            <Button 
-              onClick={retryBackendConnection}
-              variant="outline" 
-              size="sm"
-              className="border-red-500 text-red-400 hover:bg-red-500/10"
-            >
-              Retry Connection
-            </Button>
-          </div>
-        </div>
+        <BackendAlert onRetry={retryBackendConnection} />
       )}
 
       {/* Removed Demo Mode Banner */}
@@ -593,119 +557,43 @@ const Index = () => {
         <AlertSection unhappyCount={unhappyCount} />
 
         {/* UI controller: toggle use camera or upload */}
-        <div className="mb-4 flex flex-wrap items-center gap-4 justify-center">
-          <Button
-            variant={useUpload ? "secondary" : "default"}
-            onClick={() => setUseUpload(false)}
-          >
-            Camera Mode
-          </Button>
-          <Button
-            variant={useUpload ? "default" : "secondary"}
-            onClick={handleUseUploadToggle}
-          >
-            Upload Photo
-          </Button>
-          {!useUpload && cameraDevices.length > 1 && (
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded px-3 py-1">
-              <span className="text-xs text-slate-200">Camera:</span>
-              <select
-                value={selectedDeviceId || ''}
-                onChange={e => setSelectedDeviceId(e.target.value)}
-                className="bg-slate-900 text-white px-2 py-1 rounded border border-slate-500 text-xs outline-none"
-              >
-                {cameraDevices.map(device => (
-                  <option key={device.deviceId} value={device.deviceId}>
-                    {device.label || "Camera"}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
+        <ModeToggle
+          useUpload={useUpload}
+          onChange={v => {
+            setUseUpload(v);
+            if (!v) setPhotoUrl(null);
+          }}
+          cameraDevices={cameraDevices}
+          selectedDeviceId={selectedDeviceId}
+          onDeviceChange={setSelectedDeviceId}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-100">
-                  <Camera className="h-5 w-5" />
-                  Live AI Emotion Detection
-                  {backendStatus === 'disconnected' && (
-                    <Badge variant="destructive">Offline</Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Render video OR photo uploader */}
-                {useUpload ? (
-                  <>
-                    <PhotoUploader onUpload={(url) => setPhotoUrl(url)} />
-                    {photoUrl && (
-                      <>
-                        <CameraFeed
-                          className="mt-4"
-                          photoUrl={photoUrl}
-                          showUpload={false}
-                          fullscreen={fullscreen}
-                          onToggleFullscreen={() => setFullscreen(f => !f)}
-                        />
-                        <div className="mt-4 flex gap-2">
-                          <Button onClick={detectEmotionFromPhoto} disabled={isAnalyzing}>
-                            Detect Emotion
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            onClick={() => setPhotoUrl(null)}
-                          >
-                            Remove Photo
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <CameraFeed
-                    ref={videoRef}
-                    className=""
-                    selectedDeviceId={selectedDeviceId}
-                    showUpload={false} // Upload handled in upload mode above
-                    fullscreen={fullscreen}
-                    onToggleFullscreen={() => setFullscreen(f => !f)}
-                  />
-                )}
-                {/* Camera Controls Component */}
-                <CameraControls
-                  autoCapture={autoCapture}
-                  backendStatus={backendStatus}
-                  isAnalyzing={isAnalyzing}
-                  onAutoCaptureChange={setAutoCapture}
-                  onAnalyzeEntry={() => analyzeEmotion("entry")}
-                  onAnalyzeExit={() => analyzeEmotion("exit")}
-                  onCompare={compareSatisfaction}
-                  onReset={resetSession}
-                  entryEmotion={entryEmotion}
-                  exitEmotion={exitEmotion}
-                />
-              </CardContent>
-            </Card>
-            <AnalyticsDashboard
-              emotionHistory={emotionHistory}
-              unhappyCount={unhappyCount}
-              autoCapture={autoCapture}
-              backendStatus={backendStatus}
-            />
-          </div>
-          <Sidebar
-            currentEmotion={currentEmotion}
-            emotionConfidence={emotionConfidence}
-            entryEmotion={entryEmotion}
-            exitEmotion={exitEmotion}
-            satisfactionResult={satisfactionResult}
-            emotionScores={currentEmotionScores}
-            emotionHistory={emotionHistory}
-          />
-        </div>
+        <MainContentLayout
+          useUpload={useUpload}
+          cameraDevices={cameraDevices}
+          selectedDeviceId={selectedDeviceId}
+          fullscreen={fullscreen}
+          setFullscreen={setFullscreen}
+          photoUrl={photoUrl}
+          setPhotoUrl={setPhotoUrl}
+          detectEmotionFromPhoto={detectEmotionFromPhoto}
+          isAnalyzing={isAnalyzing}
+          backendStatus={backendStatus}
+          autoCapture={autoCapture}
+          onAutoCaptureChange={setAutoCapture}
+          onAnalyzeEntry={() => analyzeEmotion("entry")}
+          onAnalyzeExit={() => analyzeEmotion("exit")}
+          onCompare={compareSatisfaction}
+          onReset={resetSession}
+          entryEmotion={entryEmotion}
+          exitEmotion={exitEmotion}
+          emotionHistory={emotionHistory}
+          unhappyCount={unhappyCount}
+          currentEmotion={currentEmotion}
+          emotionConfidence={emotionConfidence}
+          satisfactionResult={satisfactionResult}
+          emotionScores={currentEmotionScores}
+        />
       </div>
     </div>
   );
