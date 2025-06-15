@@ -31,7 +31,7 @@ const CameraControls: React.FC<CameraControlsProps> = ({
     <div className="flex items-center justify-between p-2 sm:p-3 bg-slate-700/30 rounded-lg w-full">
       <div className="flex items-center gap-2 sm:gap-3 w-[70%] sm:w-auto rounded-xl">
         {autoCapture ? <Play className="h-4 w-4 text-green-400" /> : <Pause className="h-4 w-4 text-slate-400" />}
-        <span className="text-slate-200 text-xs sm:text-base whitespace-nowrap">Auto AI Detection</span>
+        <span className="text-slate-200 text-xs whitespace-nowrap font-bold sm:text-xl">Auto AI Detection</span>
         <Badge variant={autoCapture ? "default" : "secondary"} className="text-xs sm:text-sm px-2 py-0.5">
           {autoCapture ? "Active" : "Paused"}
         </Badge>
