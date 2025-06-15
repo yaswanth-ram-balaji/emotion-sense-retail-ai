@@ -87,7 +87,7 @@ const CameraPanel: React.FC<CameraPanelProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-slate-100">
           <Camera className="h-5 w-5" />
-          <span className="hidden sm:inline">Live AI Emotion Detection</span>
+          <span className="hidden sm:inline font-bold text-xl">Live AI Emotion Detection</span>
           <span className="sm:hidden font-normal text-base">AI Detection</span>
           {backendStatus === 'disconnected' && <Badge variant="destructive">Offline</Badge>}
           {backendStatus === 'connected' && <Badge variant="default" className="ml-0 sm:ml-2 bg-green-600 text-xs px-2 py-0.5 rounded-md whitespace-nowrap sm:text-sm">
