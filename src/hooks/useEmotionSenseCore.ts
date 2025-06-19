@@ -41,8 +41,6 @@ export function useEmotionSenseCore() {
   const [useUpload, setUseUpload] = useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
-  // const [ageGuess, setAgeGuess] = useState<number | null>(null);
-  // const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
   useEffect(() => {
     checkBackendConnection(setBackendStatus);
@@ -349,6 +347,7 @@ export function useEmotionSenseCore() {
     navigator.mediaDevices.enumerateDevices()
       .then(devices => {
         const cameras = devices.filter(d => d.kind === 'videoinput');
+        console.log('Available cameras:', cameras.length);
       })
       .catch(() => {});
     // Do not set as dependency to avoid endless devices call loop
@@ -483,7 +482,7 @@ export function useEmotionSenseCore() {
     setSelectedModel,
     setAutoCapture,
     setFullscreen,
-    setUseUpload,
+    setUseUpload: handleUseUploadToggle,
     setPhotoUrl,
     setFaceBlur,
     detectCurrentEmotion,
