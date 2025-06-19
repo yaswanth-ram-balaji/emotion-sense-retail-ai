@@ -103,9 +103,11 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
+      
       if (!faceResponse.ok) {
         throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
       }
+      
       const faceData = await faceResponse.json();
       console.log('Face detection response:', faceData);
 
@@ -123,6 +125,7 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
+      
       if (!emotionResponse.ok) {
         throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
       }
@@ -279,7 +282,6 @@ export function useEmotionSenseCore() {
     try {
       let data: SatisfactionResult;
 
-      // Only real backend used
       if (backendStatus === 'connected') {
         const response = await fetch(`${backendUrl}/compare-emotion`, {
           method: 'POST',
@@ -297,7 +299,6 @@ export function useEmotionSenseCore() {
           throw new Error('Backend comparison failed');
         }
       } else {
-        // Fallback logic (should never hit)
         data = { satisfaction: "Unknown", delta: "N/A" };
       }
 
