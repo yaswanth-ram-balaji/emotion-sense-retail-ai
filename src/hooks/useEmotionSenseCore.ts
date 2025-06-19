@@ -43,18 +43,20 @@ export function useEmotionSenseCore() {
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log('Initializing emotion detection system...');
     checkBackendConnection(setBackendStatus);
     loadEmotionHistory(backendStatus, setEmotionHistory);
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     if (autoCapture && backendStatus === 'connected') {
+      console.log('Starting auto-capture interval...');
       intervalRef.current = setInterval(() => {
         detectCurrentEmotion();
       }, 3000);
     } else {
       if (intervalRef.current) {
+        console.log('Stopping auto-capture interval...');
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
@@ -65,93 +67,106 @@ export function useEmotionSenseCore() {
         clearInterval(intervalRef.current);
       }
     };
-    // eslint-disable-next-line
   }, [autoCapture, backendStatus]);
 
   const backendUrl = getBackendUrl(backendStatus);
 
   const captureImage = async (): Promise<string> => {
-    if (!videoRef.current) throw new Error('Video not available');
-    const canvas = document.createElement('canvas');
+    if (!videoRef.current) {
+      throw new Error('Video element not available');
+    }
+    
     const video = videoRef.current;
+    if (video.readyState !== 4) {
+      throw new Error('Video not ready');
+    }
+
+    const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas context not available');
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
 
     ctx.drawImage(video, 0, 0);
-    return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    return dataUrl.split(',')[1];
+  };
+
+  const makeApiRequest = async (endpoint: string, data?: any) => {
+    const url = `${backendUrl}${endpoint}`;
+    console.log(`Making API request to: ${url}`);
+    
+    const options: RequestInit = {
+      method: data ? 'POST' : 'GET',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    };
+
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API request failed: ${response.status} ${response.statusText}`, errorText);
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+
+    return await response.json();
   };
 
   const detectCurrentEmotion = async () => {
-    if (isAnalyzing || backendStatus !== 'connected') return;
+    if (isAnalyzing || backendStatus !== 'connected') {
+      console.log('Skipping detection - analyzing or backend disconnected');
+      return;
+    }
+    
     setIsAnalyzing(true);
 
     try {
       console.log('Starting emotion detection...');
       const imageBase64 = await captureImage();
-      console.log('Image captured, processing...');
+      console.log('Image captured successfully');
 
-      // Detect face
-      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
+      // Step 1: Detect face
+      const faceData = await makeApiRequest('/detect-face', {
+        image_base64: imageBase64,
+        method: selectedModel
       });
       
-      if (!faceResponse.ok) {
-        throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
-      }
-      
-      const faceData = await faceResponse.json();
-      console.log('Face detection response:', faceData);
-
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
+      const emotionData = await makeApiRequest('/analyze_emotion', {
+        image_base64: faceData.face_crop_base64,
+        method: selectedModel
       });
-      
-      if (!emotionResponse.ok) {
-        throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
-      }
 
-      const emotionData = await emotionResponse.json();
-      console.log('Emotion analysis response (full):', emotionData);
+      console.log('Emotion detection successful:', emotionData);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
 
-      console.log(
-        `Detected emotion: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}% confidence)`
-      );
-      if (emotionData.emotion_scores) {
-        console.log('Emotion scores:', emotionData.emotion_scores);
-      }
     } catch (error) {
       console.error('Error in emotion detection:', error);
-
-      // Check backend connection via helper
+      
+      // Re-check backend connection
       const isConnected = await checkBackendConnection(setBackendStatus);
       if (!isConnected) {
         toast({
           title: "Backend Disconnected",
-          description: "Backend connection lost. Please check your FastAPI server.",
+          description: "Lost connection to emotion detection server",
           variant: "destructive"
         });
         setAutoCapture(false);
@@ -171,7 +186,7 @@ export function useEmotionSenseCore() {
     if (backendStatus === 'disconnected') {
       toast({
         title: "Backend Not Available",
-        description: "Please start the FastAPI server.",
+        description: "Please start the FastAPI server first",
         variant: "destructive"
       });
       return;
@@ -182,46 +197,26 @@ export function useEmotionSenseCore() {
     try {
       console.log(`Starting ${type} emotion analysis...`);
       const imageBase64 = await captureImage();
-      let emotion: string;
-      let confidence: number;
-      let emotionScores: Record<string, number> | undefined;
 
       // Step 1: Detect face
-      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
+      const faceData = await makeApiRequest('/detect-face', {
+        image_base64: imageBase64,
+        method: selectedModel
       });
-      if (!faceResponse.ok) {
-        throw new Error(`Face detection failed: ${faceResponse.status}`);
-      }
-      const faceData = await faceResponse.json();
-
+      
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
+      const emotionData = await makeApiRequest('/analyze_emotion', {
+        image_base64: faceData.face_crop_base64,
+        method: selectedModel
       });
-      if (!emotionResponse.ok) {
-        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
-      }
-      const emotionData = await emotionResponse.json();
-      emotion = emotionData.emotion;
-      confidence = emotionData.confidence || 0.85;
-      emotionScores = emotionData.emotion_scores || null;
+
+      const emotion = emotionData.emotion;
+      const confidence = emotionData.confidence || 0.85;
+      const emotionScores = emotionData.emotion_scores || null;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
@@ -242,7 +237,7 @@ export function useEmotionSenseCore() {
       };
       setEmotionHistory(prev => [newEntry, ...prev].slice(0, 50));
 
-      if (type === 'exit' && (emotion === 'angry' || emotion === 'sad' || emotion === 'disgust' || emotion === 'fear')) {
+      if (type === 'exit' && ['angry', 'sad', 'disgust', 'fear'].includes(emotion)) {
         setUnhappyCount(prev => prev + 1);
       }
 
@@ -251,14 +246,10 @@ export function useEmotionSenseCore() {
         description: `Customer appears ${emotion.toLowerCase()} (${(confidence * 100).toFixed(1)}% confidence)`
       });
 
-      console.log(`${type} emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
-      if (emotionScores) {
-        console.log('Emotion scores:', emotionScores);
-      }
+      console.log(`${type} emotion analysis completed:`, emotion, confidence);
 
     } catch (error) {
       console.error('Error analyzing emotion:', error);
-
       toast({
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Could not analyze emotion",
@@ -273,7 +264,7 @@ export function useEmotionSenseCore() {
     if (!entryEmotion || !exitEmotion) {
       toast({
         title: "Incomplete Data",
-        description: "Please capture both entry and exit emotions first.",
+        description: "Please capture both entry and exit emotions first",
         variant: "destructive"
       });
       return;
@@ -283,21 +274,10 @@ export function useEmotionSenseCore() {
       let data: SatisfactionResult;
 
       if (backendStatus === 'connected') {
-        const response = await fetch(`${backendUrl}/compare-emotion`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ entry: entryEmotion, exit: exitEmotion })
+        data = await makeApiRequest('/compare-emotion', {
+          entry: entryEmotion,
+          exit: exitEmotion
         });
-
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          throw new Error('Backend comparison failed');
-        }
       } else {
         data = { satisfaction: "Unknown", delta: "N/A" };
       }
@@ -305,12 +285,17 @@ export function useEmotionSenseCore() {
       setSatisfactionResult(data);
 
       toast({
-        title: `Satisfaction Analysis Complete`,
-        description: "Customer journey analyzed successfully"
+        title: "Satisfaction Analysis Complete",
+        description: `Journey analyzed: ${data.satisfaction}`
       });
 
     } catch (error) {
       console.error('Error comparing emotions:', error);
+      toast({
+        title: "Comparison Failed",
+        description: "Could not compare emotions",
+        variant: "destructive"
+      });
     }
   };
 
@@ -327,6 +312,7 @@ export function useEmotionSenseCore() {
   };
 
   const retryBackendConnection = async () => {
+    console.log('Retrying backend connection...');
     setBackendStatus('checking');
     const connected = await checkBackendConnection(setBackendStatus);
     if (connected) {
@@ -344,20 +330,11 @@ export function useEmotionSenseCore() {
     }
   };
 
-  useEffect(() => {
-    navigator.mediaDevices.enumerateDevices()
-      .then(devices => {
-        const cameras = devices.filter(d => d.kind === 'videoinput');
-        console.log('Available cameras:', cameras.length);
-      })
-      .catch(() => {});
-    // Do not set as dependency to avoid endless devices call loop
-    // eslint-disable-next-line
-  }, []);
-
   const handleUseUploadToggle = () => {
     setUseUpload(prev => {
-      if (!prev) { setPhotoUrl(null); }
+      if (!prev) { 
+        setPhotoUrl(null); 
+      }
       return !prev;
     });
   };
@@ -376,38 +353,22 @@ export function useEmotionSenseCore() {
       const imageBase64 = photoUrl.split(",")[1] || photoUrl;
 
       // Step 1: Detect face
-      const faceResponse = await fetch(`${backendUrl}/detect-face`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
+      const faceData = await makeApiRequest('/detect-face', {
+        image_base64: imageBase64,
+        method: selectedModel
       });
-      if (!faceResponse.ok) {
-        throw new Error(`Face detection failed: ${faceResponse.status}`);
-      }
-      const faceData = await faceResponse.json();
+      
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
       }
 
       // Step 2: Analyze emotion
-      const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
+      const emotionData = await makeApiRequest('/analyze_emotion', {
+        image_base64: faceData.face_crop_base64,
+        method: selectedModel
       });
-      if (!emotionResponse.ok) {
-        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
-      }
-      const emotionData = await emotionResponse.json();
-      console.log('Photo emotion analysis response (full):', emotionData);
+
+      console.log('Photo emotion analysis successful:', emotionData);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
@@ -421,7 +382,7 @@ export function useEmotionSenseCore() {
       console.error('Error analyzing uploaded photo:', error);
       toast({
         title: "Photo Detection Failed",
-        description: error instanceof Error ? error.message : "Could not detect photo emotion",
+        description: error instanceof Error ? error.message : "Could not detect emotion from photo",
         variant: "destructive"
       });
     } finally {
