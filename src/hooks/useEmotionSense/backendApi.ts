@@ -1,26 +1,17 @@
 
-// Utility for backend API communication
+// Utility for backend API communication - Local Development Only
 
 export function getBackendUrl(backendStatus: string) {
-  // Pick the correct backend address
-  return backendStatus === "connected"
-    ? "http://localhost:8000"
-    : "http://127.0.0.1:8000";
-}
-
-export function getNetworkBackendUrl() {
-  // For mobile/network access, you'll need to replace this with your laptop's actual IP
-  // Find your IP with: ipconfig (Windows) or ifconfig (Mac/Linux)
-  // Example: return "http://192.168.1.100:8000";
-  return "http://YOUR_LAPTOP_IP:8000"; // Replace with your actual laptop IP
+  // For local development, always use localhost
+  return "http://localhost:8000";
 }
 
 export async function checkBackendConnection(
   setBackendStatus: (s: "connected" | "disconnected" | "checking") => void
 ) {
   try {
-    // First try localhost (for laptop)
-    const response = await fetch("http://localhost:8000/docs", {
+    // Try localhost first
+    const response = await fetch("http://localhost:8000/health", {
       method: "GET",
       mode: "cors",
     });
@@ -31,29 +22,14 @@ export async function checkBackendConnection(
   } catch {}
   
   try {
-    // Then try 127.0.0.1 (for laptop)
-    const response = await fetch("http://127.0.0.1:8000/docs", {
+    // Fallback to 127.0.0.1
+    const response = await fetch("http://127.0.0.1:8000/health", {
       method: "GET",
       mode: "cors",
     });
     if (response.ok) {
       setBackendStatus("connected");
       return true;
-    }
-  } catch {}
-
-  try {
-    // Try network IP for mobile access
-    const networkUrl = getNetworkBackendUrl();
-    if (networkUrl !== "http://YOUR_LAPTOP_IP:8000") {
-      const response = await fetch(`${networkUrl}/docs`, {
-        method: "GET",
-        mode: "cors",
-      });
-      if (response.ok) {
-        setBackendStatus("connected");
-        return true;
-      }
     }
   } catch {}
 
@@ -67,43 +43,23 @@ export async function loadEmotionHistory(
 ) {
   try {
     if (backendStatus === "connected") {
-      let backendUrl = getBackendUrl(backendStatus);
+      const backendUrl = getBackendUrl(backendStatus);
       
-      // If localhost fails, try network IP
-      try {
-        const response = await fetch(`${backendUrl}/emotion-log`, {
-          method: "GET",
-          mode: "cors",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setEmotionHistory(data);
-          return;
-        }
-      } catch {}
-
-      // Try network IP as fallback
-      const networkUrl = getNetworkBackendUrl();
-      if (networkUrl !== "http://YOUR_LAPTOP_IP:8000") {
-        const response = await fetch(`${networkUrl}/emotion-log`, {
-          method: "GET",
-          mode: "cors",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setEmotionHistory(data);
-        }
+      const response = await fetch(`${backendUrl}/emotion-log`, {
+        method: "GET",
+        mode: "cors",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setEmotionHistory(data);
       }
     }
   } catch (error) {
-    // ignore for now
+    console.log("Could not load emotion history:", error);
   }
 }

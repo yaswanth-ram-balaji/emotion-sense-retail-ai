@@ -3,7 +3,6 @@ import base64
 from io import BytesIO
 from PIL import Image
 import random
-import os
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -106,5 +105,4 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
