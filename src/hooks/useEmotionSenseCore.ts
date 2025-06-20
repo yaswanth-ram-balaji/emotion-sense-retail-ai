@@ -34,13 +34,15 @@ export function useEmotionSenseCore() {
   const [autoCapture, setAutoCapture] = useState<boolean>(false);
   const [unhappyCount, setUnhappyCount] = useState<number>(0);
   const [backendStatus, setBackendStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
-  const [selectedModel, setSelectedModel] = useState<string>('deepface');
+  const [selectedModel, setSelectedModel] = useState<string>('fer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [fullscreen, setFullscreen] = useState<boolean>(false);
   const [useUpload, setUseUpload] = useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [faceBlur, setFaceBlur] = useState<boolean>(false);
+  // const [ageGuess, setAgeGuess] = useState<number | null>(null);
+  // const [genderGuess, setGenderGuess] = useState<string | null>(null);
 
   useEffect(() => {
     checkBackendConnection(setBackendStatus);
@@ -74,11 +76,6 @@ export function useEmotionSenseCore() {
     if (!videoRef.current) throw new Error('Video not available');
     const canvas = document.createElement('canvas');
     const video = videoRef.current;
-    
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      throw new Error('Video not ready');
-    }
-    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
@@ -94,7 +91,9 @@ export function useEmotionSenseCore() {
     setIsAnalyzing(true);
 
     try {
+      console.log('Starting emotion detection...');
       const imageBase64 = await captureImage();
+      console.log('Image captured, processing...');
 
       // Detect face
       const faceResponse = await fetch(`${backendUrl}/detect-face`, {
@@ -106,19 +105,17 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
-        throw new Error('Face detection failed');
+        throw new Error(`Face detection failed: ${faceResponse.status} ${faceResponse.statusText}`);
       }
-
       const faceData = await faceResponse.json();
+      console.log('Face detection response:', faceData);
 
       if (!faceData.face_crop_base64) {
-        console.log('No face detected');
-        return;
+        throw new Error('No face detected in image');
       }
 
-      // Analyze emotion
+      // Step 2: Analyze emotion
       const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
@@ -128,22 +125,41 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
-        throw new Error('Emotion analysis failed');
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status} ${emotionResponse.statusText}`);
       }
 
       const emotionData = await emotionResponse.json();
+      console.log('Emotion analysis response (full):', emotionData);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
       setCurrentEmotionScores(emotionData.emotion_scores || null);
 
+      console.log(
+        `Detected emotion: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}% confidence)`
+      );
+      if (emotionData.emotion_scores) {
+        console.log('Emotion scores:', emotionData.emotion_scores);
+      }
     } catch (error) {
-      console.log('Detection error:', error);
+      console.error('Error in emotion detection:', error);
+
+      // Check backend connection via helper
       const isConnected = await checkBackendConnection(setBackendStatus);
       if (!isConnected) {
+        toast({
+          title: "Backend Disconnected",
+          description: "Backend connection lost. Please check your FastAPI server.",
+          variant: "destructive"
+        });
         setAutoCapture(false);
+      } else if (!autoCapture) {
+        toast({
+          title: "Detection Failed",
+          description: error instanceof Error ? error.message : "Could not detect emotion",
+          variant: "destructive"
+        });
       }
     } finally {
       setIsAnalyzing(false);
@@ -163,8 +179,13 @@ export function useEmotionSenseCore() {
     setIsAnalyzing(true);
 
     try {
+      console.log(`Starting ${type} emotion analysis...`);
       const imageBase64 = await captureImage();
+      let emotion: string;
+      let confidence: number;
+      let emotionScores: Record<string, number> | undefined;
 
+      // Step 1: Detect face
       const faceResponse = await fetch(`${backendUrl}/detect-face`, {
         method: 'POST',
         mode: 'cors',
@@ -174,17 +195,16 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
-        throw new Error('Face detection failed');
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
       }
-
       const faceData = await faceResponse.json();
 
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
       }
 
+      // Step 2: Analyze emotion
       const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
@@ -194,15 +214,13 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
-        throw new Error('Emotion analysis failed');
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
       }
-
       const emotionData = await emotionResponse.json();
-      const emotion = emotionData.emotion;
-      const confidence = emotionData.confidence || 0.85;
-      const emotionScores = emotionData.emotion_scores || null;
+      emotion = emotionData.emotion;
+      confidence = emotionData.confidence || 0.85;
+      emotionScores = emotionData.emotion_scores || null;
 
       setCurrentEmotion(emotion);
       setEmotionConfidence(confidence);
@@ -232,11 +250,17 @@ export function useEmotionSenseCore() {
         description: `Customer appears ${emotion.toLowerCase()} (${(confidence * 100).toFixed(1)}% confidence)`
       });
 
+      console.log(`${type} emotion: ${emotion} (${(confidence * 100).toFixed(1)}% confidence)`);
+      if (emotionScores) {
+        console.log('Emotion scores:', emotionScores);
+      }
+
     } catch (error) {
-      console.log('Analysis error:', error);
+      console.error('Error analyzing emotion:', error);
+
       toast({
         title: "Analysis Failed",
-        description: "Could not analyze emotion",
+        description: error instanceof Error ? error.message : "Could not analyze emotion",
         variant: "destructive"
       });
     } finally {
@@ -255,6 +279,9 @@ export function useEmotionSenseCore() {
     }
 
     try {
+      let data: SatisfactionResult;
+
+      // Only real backend used
       if (backendStatus === 'connected') {
         const response = await fetch(`${backendUrl}/compare-emotion`, {
           method: 'POST',
@@ -267,14 +294,16 @@ export function useEmotionSenseCore() {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          setSatisfactionResult(data);
+          data = await response.json();
         } else {
           throw new Error('Backend comparison failed');
         }
       } else {
-        setSatisfactionResult({ satisfaction: "Unknown", delta: "N/A" });
+        // Fallback logic (should never hit)
+        data = { satisfaction: "Unknown", delta: "N/A" };
       }
+
+      setSatisfactionResult(data);
 
       toast({
         title: `Satisfaction Analysis Complete`,
@@ -282,7 +311,7 @@ export function useEmotionSenseCore() {
       });
 
     } catch (error) {
-      console.log('Comparison error:', error);
+      console.error('Error comparing emotions:', error);
     }
   };
 
@@ -346,6 +375,7 @@ export function useEmotionSenseCore() {
     try {
       const imageBase64 = photoUrl.split(",")[1] || photoUrl;
 
+      // Step 1: Detect face
       const faceResponse = await fetch(`${backendUrl}/detect-face`, {
         method: 'POST',
         mode: 'cors',
@@ -355,16 +385,15 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: imageBase64, method: selectedModel })
       });
-
       if (!faceResponse.ok) {
-        throw new Error('Face detection failed');
+        throw new Error(`Face detection failed: ${faceResponse.status}`);
       }
-
       const faceData = await faceResponse.json();
       if (!faceData.face_crop_base64) {
         throw new Error('No face detected in image');
       }
 
+      // Step 2: Analyze emotion
       const emotionResponse = await fetch(`${backendUrl}/analyze_emotion`, {
         method: 'POST',
         mode: 'cors',
@@ -374,12 +403,11 @@ export function useEmotionSenseCore() {
         },
         body: JSON.stringify({ image_base64: faceData.face_crop_base64, method: selectedModel })
       });
-
       if (!emotionResponse.ok) {
-        throw new Error('Emotion analysis failed');
+        throw new Error(`Emotion analysis failed: ${emotionResponse.status}`);
       }
-
       const emotionData = await emotionResponse.json();
+      console.log('Photo emotion analysis response (full):', emotionData);
 
       setCurrentEmotion(emotionData.emotion);
       setEmotionConfidence(emotionData.confidence || 0.85);
@@ -390,10 +418,10 @@ export function useEmotionSenseCore() {
         description: `Detected: ${emotionData.emotion} (${(emotionData.confidence * 100).toFixed(1)}%)`
       });
     } catch (error) {
-      console.log('Photo analysis error:', error);
+      console.error('Error analyzing uploaded photo:', error);
       toast({
         title: "Photo Detection Failed",
-        description: "Could not detect emotion from photo",
+        description: error instanceof Error ? error.message : "Could not detect photo emotion",
         variant: "destructive"
       });
     } finally {
