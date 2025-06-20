@@ -1,8 +1,5 @@
 
-// Utility for backend API communication
-
 export function getBackendUrl(backendStatus: string) {
-  // Pick the correct backend address
   return backendStatus === "connected"
     ? "http://localhost:8000"
     : "http://127.0.0.1:8000";
@@ -12,7 +9,7 @@ export async function checkBackendConnection(
   setBackendStatus: (s: "connected" | "disconnected" | "checking") => void
 ) {
   try {
-    const response = await fetch("http://localhost:8000/docs", {
+    const response = await fetch("http://localhost:8000/health", {
       method: "GET",
       mode: "cors",
     });
@@ -21,8 +18,9 @@ export async function checkBackendConnection(
       return true;
     }
   } catch {}
+  
   try {
-    const response = await fetch("http://127.0.0.1:8000/docs", {
+    const response = await fetch("http://127.0.0.1:8000/health", {
       method: "GET",
       mode: "cors",
     });
@@ -31,6 +29,7 @@ export async function checkBackendConnection(
       return true;
     }
   } catch {}
+  
   setBackendStatus("disconnected");
   return false;
 }
@@ -58,6 +57,6 @@ export async function loadEmotionHistory(
       }
     }
   } catch (error) {
-    // ignore for now
+    // Silently handle error
   }
 }

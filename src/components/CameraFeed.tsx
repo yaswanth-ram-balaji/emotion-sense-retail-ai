@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { Camera, Fullscreen, Upload, SwitchCamera, Minimize } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 
 interface CameraFeedProps {
   className?: string;
@@ -35,34 +34,24 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
     ref
   ) => {
     const videoRef = (ref as React.RefObject<HTMLVideoElement>);
-    const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
     const [cameraActive, setCameraActive] = useState(false);
-    const [cameraCheckPending, setCameraCheckPending] = useState(true);
     const [isFullscreenActive, setIsFullscreenActive] = useState(false);
+    const videoContainerRef = useRef<HTMLDivElement>(null);
 
-    // Device change logic
-    useEffect(() => {
-      (async () => {
-        try {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          setAvailableDevices(devices.filter(d => d.kind === 'videoinput'));
-        } catch (e) {
-          console.error('Failed to enumerate devices:', e);
-        }
-      })();
-    }, []);
-
-    // Camera stream start/stop logic
+    // Camera stream management
     useEffect(() => {
       let currentStream: MediaStream | null = null;
       let isMounted = true;
-      setCameraActive(false);
-      setCameraCheckPending(true);
 
       const startCamera = async () => {
         try {
           if (photoUrl) return;
-          if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+          
+          // Stop existing stream
+          if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+          }
+
           const constraints: MediaStreamConstraints = {
             video: {
               width: { ideal: 960 },
@@ -71,37 +60,33 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               facingMode: selectedDeviceId ? undefined : 'user'
             }
           };
+
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          if (videoRef && videoRef.current) {
+          
+          if (videoRef && videoRef.current && isMounted) {
             videoRef.current.srcObject = stream;
-            setCameraActive(false); // Wait for "loadeddata"
+            videoRef.current.onloadeddata = () => {
+              if (isMounted) setCameraActive(true);
+            };
           }
           currentStream = stream;
         } catch (error) {
-          console.error('Error accessing camera:', error);
-          setCameraActive(false);
+          console.log('Camera access failed, continuing without camera');
+          if (isMounted) setCameraActive(false);
         }
       };
 
       startCamera();
 
-      // Fallback: after 2 seconds, if no 'loadeddata', mark as failed
-      const timeoutId = setTimeout(() => {
-        if (!cameraActive && isMounted && !photoUrl) setCameraCheckPending(false);
-      }, 2000);
-
       return () => {
+        isMounted = false;
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
         }
-        isMounted = false;
-        clearTimeout(timeoutId);
       };
     }, [selectedDeviceId, videoRef, photoUrl]);
 
-    // Fullscreen handling with improved mobile support
-    const videoContainerRef = useRef<HTMLDivElement>(null);
-    
+    // Fullscreen handling
     useEffect(() => {
       const handleFullscreenChange = () => {
         setIsFullscreenActive(!!document.fullscreenElement);
@@ -125,7 +110,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
 
       try {
         if (!isFullscreenActive) {
-          // Enter fullscreen
           const element = videoContainerRef.current;
           if (element.requestFullscreen) {
             await element.requestFullscreen();
@@ -137,7 +121,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             await (element as any).msRequestFullscreen();
           }
         } else {
-          // Exit fullscreen
           if (document.exitFullscreen) {
             await document.exitFullscreen();
           } else if ((document as any).webkitExitFullscreen) {
@@ -151,11 +134,10 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
         
         if (onToggleFullscreen) onToggleFullscreen();
       } catch (error) {
-        console.error('Fullscreen toggle failed:', error);
+        console.log('Fullscreen toggle failed');
       }
     }, [isFullscreenActive, onToggleFullscreen]);
 
-    // Photo upload
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         const file = e.target.files[0];
@@ -168,15 +150,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       }
       e.target.value = '';
     };
-
-    // Event: when video successfully streams, set cameraActive
-    const handleVideoLoadedData = () => {
-      setCameraActive(true);
-      setCameraCheckPending(false);
-    };
-
-    // Error UI: only show if not photo mode, and camera is not active after timeout
-    const noCameraAvailable = !photoUrl && !cameraActive && !cameraCheckPending;
 
     return (
       <div
@@ -199,7 +172,6 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             ? 'w-full h-full max-w-none' 
             : 'aspect-video'
         }`}>
-          {/* If photo uploaded: show <img>, else <video> */}
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -214,29 +186,19 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               playsInline
               muted
               className="w-full h-full object-cover"
-              onLoadedData={handleVideoLoadedData}
             />
           )}
-          {noCameraAvailable && (
-            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-50">
-              <span className="text-red-400 font-bold text-lg mb-2">No Camera Available</span>
-              <span className="text-slate-100 text-xs text-center px-4">Please check browser camera permissions or connect a camera device.</span>
-            </div>
-          )}
+
           {/* Overlay UI */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Face detection frame - responsive sizing */}
+            {/* Face detection frame */}
             <div
               className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-4 border-green-400/70 rounded-lg transition-all bg-green-400/5 ${
                 isFullscreenActive || fullscreen 
                   ? 'w-64 h-80 sm:w-80 sm:h-96' 
                   : 'w-48 h-60 sm:w-80 sm:h-96'
               }`}
-              style={{
-                overflow: 'hidden'
-              }}
             >
-              {/* Blur overlay if faceBlur mode is on */}
               {faceBlur && (
                 <div className="absolute inset-0 z-10"
                   style={{
@@ -254,18 +216,18 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
                 </span>
               </div>
             </div>
-            {/* Corner indicators */}
+
+            {/* Live indicator */}
             <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <span className="text-white text-xs">LIVE</span>
             </div>
-            {/* Fullscreen & Upload & Flip controls */}
+
+            {/* Controls */}
             <div className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto z-20">
               <button
-                className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 mb-2 border border-white/10"
+                className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 border border-white/10"
                 aria-label={isFullscreenActive ? "Exit Fullscreen" : "Enter Fullscreen"}
-                title={isFullscreenActive ? "Exit Fullscreen" : "Enter Fullscreen"}
-                type="button"
                 onClick={handleToggleFullscreen}
               >
                 {isFullscreenActive ? (
@@ -274,19 +236,19 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
                   <Fullscreen className="w-5 h-5 text-white" />
                 )}
               </button>
+
               {canFlip && (
                 <button
-                  className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 mb-2 border border-white/10"
+                  className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 border border-white/10"
                   aria-label={flipLabel || "Switch Camera"}
-                  type="button"
                   onClick={onFlipCamera}
-                  title={flipLabel || "Switch Camera"}
                 >
                   <SwitchCamera className="w-5 h-5 text-white" />
                 </button>
               )}
+
               {showUpload && (
-                <label className="inline-block bg-black/50 hover:bg-gray-900/80 rounded-full p-2 cursor-pointer border border-white/10" title="Upload Photo">
+                <label className="inline-block bg-black/50 hover:bg-gray-900/80 rounded-full p-2 cursor-pointer border border-white/10">
                   <Upload className="w-5 h-5 text-white" />
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} />
                 </label>
@@ -294,12 +256,13 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             </div>
           </div>
         </div>
+
         {/* Camera info - hide in fullscreen */}
         {!(isFullscreenActive || fullscreen) && (
           <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-2">
               <Camera className="w-3 h-3" />
-              <span>{photoUrl ? 'Photo Upload Preview' : noCameraAvailable ? 'Camera Not Active' : 'Position face within the detection zone'}</span>
+              <span>{photoUrl ? 'Photo Upload Preview' : 'Position face within the detection zone'}</span>
             </div>
             <span>960x720 • 30fps</span>
           </div>
