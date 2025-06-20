@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
-import { Camera, Fullscreen, Upload, SwitchCamera } from 'lucide-react';
+import { Camera, Fullscreen, Upload, SwitchCamera, Minimize } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface CameraFeedProps {
@@ -38,6 +38,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
     const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
     const [cameraActive, setCameraActive] = useState(false);
     const [cameraCheckPending, setCameraCheckPending] = useState(true);
+    const [isFullscreenActive, setIsFullscreenActive] = useState(false);
 
     // Device change logic
     useEffect(() => {
@@ -98,17 +99,61 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       };
     }, [selectedDeviceId, videoRef, photoUrl]);
 
-    // Fullscreen handling
+    // Fullscreen handling with improved mobile support
     const videoContainerRef = useRef<HTMLDivElement>(null);
-    const handleToggleFullscreen = useCallback(() => {
+    
+    useEffect(() => {
+      const handleFullscreenChange = () => {
+        setIsFullscreenActive(!!document.fullscreenElement);
+      };
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+      return () => {
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+      };
+    }, []);
+
+    const handleToggleFullscreen = useCallback(async () => {
       if (!videoContainerRef.current) return;
-      if (!document.fullscreenElement) {
-        videoContainerRef.current.requestFullscreen();
-      } else {
-        document.exitFullscreen();
+
+      try {
+        if (!isFullscreenActive) {
+          // Enter fullscreen
+          const element = videoContainerRef.current;
+          if (element.requestFullscreen) {
+            await element.requestFullscreen();
+          } else if ((element as any).webkitRequestFullscreen) {
+            await (element as any).webkitRequestFullscreen();
+          } else if ((element as any).mozRequestFullScreen) {
+            await (element as any).mozRequestFullScreen();
+          } else if ((element as any).msRequestFullscreen) {
+            await (element as any).msRequestFullscreen();
+          }
+        } else {
+          // Exit fullscreen
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if ((document as any).webkitExitFullscreen) {
+            await (document as any).webkitExitFullscreen();
+          } else if ((document as any).mozCancelFullScreen) {
+            await (document as any).mozCancelFullScreen();
+          } else if ((document as any).msExitFullscreen) {
+            await (document as any).msExitFullscreen();
+          }
+        }
+        
+        if (onToggleFullscreen) onToggleFullscreen();
+      } catch (error) {
+        console.error('Fullscreen toggle failed:', error);
       }
-      if (onToggleFullscreen) onToggleFullscreen();
-    }, [onToggleFullscreen]);
+    }, [isFullscreenActive, onToggleFullscreen]);
 
     // Photo upload
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,10 +181,24 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
     return (
       <div
         ref={videoContainerRef}
-        className={`relative ${className} ${fullscreen ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' : ''}`}
-        style={fullscreen ? { height: '100%', width: '100%' } : undefined}
+        className={`relative ${className} ${
+          isFullscreenActive || fullscreen 
+            ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' 
+            : ''
+        }`}
+        style={isFullscreenActive || fullscreen ? { 
+          height: '100vh', 
+          width: '100vw',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        } : undefined}
       >
-        <div className="relative rounded-lg overflow-hidden bg-slate-900/50 aspect-video">
+        <div className={`relative rounded-lg overflow-hidden bg-slate-900/50 ${
+          isFullscreenActive || fullscreen 
+            ? 'w-full h-full max-w-none' 
+            : 'aspect-video'
+        }`}>
           {/* If photo uploaded: show <img>, else <video> */}
           {photoUrl ? (
             <img
@@ -161,14 +220,18 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
           {noCameraAvailable && (
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-50">
               <span className="text-red-400 font-bold text-lg mb-2">No Camera Available</span>
-              <span className="text-slate-100 text-xs">Please check browser camera permissions or connect a camera device.</span>
+              <span className="text-slate-100 text-xs text-center px-4">Please check browser camera permissions or connect a camera device.</span>
             </div>
           )}
           {/* Overlay UI */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Bigger Face detection frame */}
+            {/* Face detection frame - responsive sizing */}
             <div
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-96 border-4 border-green-400/70 rounded-lg transition-all bg-green-400/5"
+              className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-4 border-green-400/70 rounded-lg transition-all bg-green-400/5 ${
+                isFullscreenActive || fullscreen 
+                  ? 'w-64 h-80 sm:w-80 sm:h-96' 
+                  : 'w-48 h-60 sm:w-80 sm:h-96'
+              }`}
               style={{
                 overflow: 'hidden'
               }}
@@ -186,7 +249,7 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               )}
 
               <div className="absolute -top-8 left-0 bg-green-400/20 backdrop-blur-sm rounded px-3 py-1">
-                <span className="text-green-400 text-sm font-medium">
+                <span className="text-green-400 text-xs sm:text-sm font-medium">
                   Face Detection Zone{faceBlur ? " (Blurred)" : ""}
                 </span>
               </div>
@@ -200,12 +263,16 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             <div className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto z-20">
               <button
                 className="bg-black/50 hover:bg-gray-900/80 transition rounded-full p-2 mb-2 border border-white/10"
-                aria-label="Fullscreen"
-                title="Fullscreen"
+                aria-label={isFullscreenActive ? "Exit Fullscreen" : "Enter Fullscreen"}
+                title={isFullscreenActive ? "Exit Fullscreen" : "Enter Fullscreen"}
                 type="button"
                 onClick={handleToggleFullscreen}
               >
-                <Fullscreen className="w-5 h-5 text-white" />
+                {isFullscreenActive ? (
+                  <Minimize className="w-5 h-5 text-white" />
+                ) : (
+                  <Fullscreen className="w-5 h-5 text-white" />
+                )}
               </button>
               {canFlip && (
                 <button
@@ -227,14 +294,16 @@ const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             </div>
           </div>
         </div>
-        {/* Camera info */}
-        <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <Camera className="w-3 h-3" />
-            <span>{photoUrl ? 'Photo Upload Preview' : noCameraAvailable ? 'Camera Not Active' : 'Position face within the detection zone'}</span>
+        {/* Camera info - hide in fullscreen */}
+        {!(isFullscreenActive || fullscreen) && (
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <Camera className="w-3 h-3" />
+              <span>{photoUrl ? 'Photo Upload Preview' : noCameraAvailable ? 'Camera Not Active' : 'Position face within the detection zone'}</span>
+            </div>
+            <span>960x720 • 30fps</span>
           </div>
-          <span>960x720 • 30fps</span>
-        </div>
+        )}
       </div>
     );
   }
