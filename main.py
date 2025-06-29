@@ -1,4 +1,4 @@
-# Production-ready FastAPI backend for Railway deployment
+# 🚀 Railway Production Backend - Optimized for mobile deployment
 import base64
 from io import BytesIO
 from PIL import Image
@@ -13,19 +13,19 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
-    title="Emotion Detection API",
-    description="AI-powered emotion detection for retail analytics",
+    title="🎯 Emotion Detection API",
+    description="AI-powered emotion detection for retail analytics - Railway Deployment",
     version="1.0.0"
 )
 
-# Production CORS configuration - allows your Netlify frontend
+# Production CORS - allows your Netlify frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://cute-lily-7bee8d.netlify.app",  # Your Netlify site
         "http://localhost:8080",  # Local development
         "http://localhost:3000",  # Alternative local
-        "*"  # Allow all for now (restrict in production)
+        "*"  # Allow all for Railway deployment
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -41,20 +41,21 @@ class EmotionComparison(BaseModel):
     exit: str
 
 def log_error_to_file(msg):
-    """Log errors for debugging in production"""
+    """Log errors for Railway debugging"""
     try:
-        print(f"ERROR LOG: {msg}")  # Railway logs will capture this
+        print(f"🚨 ERROR: {msg}")  # Railway captures stdout
     except:
         pass
 
 @app.get("/")
 async def root():
     return {
-        "message": "🎯 Emotion Detection API is running on Railway!",
+        "message": "🎯 Emotion Detection API is LIVE on Railway!",
         "status": "healthy",
         "version": "1.0.0",
-        "endpoints": ["/detect-face", "/analyze_emotion", "/compare-emotion", "/docs"],
-        "deployment": "railway-production"
+        "platform": "railway-production",
+        "endpoints": ["/health", "/detect-face", "/analyze_emotion", "/compare-emotion", "/docs"],
+        "frontend": "https://cute-lily-7bee8d.netlify.app"
     }
 
 @app.get("/health")
@@ -63,7 +64,8 @@ async def health_check():
         "status": "healthy", 
         "service": "emotion-detection-api",
         "platform": "railway",
-        "python_version": sys.version
+        "python_version": sys.version,
+        "message": "🚀 Backend is running perfectly!"
     }
 
 @app.post("/detect-face")
@@ -95,7 +97,6 @@ async def detect_face(payload: ImageInput):
                 print(f"👥 Found {len(detected_faces)} faces")
                 
                 if not detected_faces:
-                    # Return original image if no face detected
                     print("⚠️ No face detected, returning original")
                     return {"face_crop_base64": payload.image_base64}
                 
@@ -130,10 +131,8 @@ async def detect_face(payload: ImageInput):
                 error_msg = f"❌ DeepFace error: {e}"
                 print(error_msg)
                 log_error_to_file(error_msg)
-                # Return original image as fallback
                 return {"face_crop_base64": payload.image_base64}
         else:
-            # Fallback for other methods
             return {"face_crop_base64": payload.image_base64}
             
     except Exception as e:
@@ -194,7 +193,6 @@ async def analyze_emotion(payload: ImageInput):
             error_msg = f"❌ DeepFace emotion analysis error: {e}"
             print(error_msg)
             log_error_to_file(error_msg)
-            # Return neutral fallback
             print("🔄 Returning neutral fallback")
             return {
                 "emotion": "neutral",
@@ -254,14 +252,14 @@ async def compare_emotion(payload: EmotionComparison):
 async def get_emotion_log():
     """Get emotion history (placeholder for now)"""
     print("📋 Fetching emotion log")
-    # Return empty array for now - can be extended later
     return []
 
-# Railway production server
+# Railway production server configuration
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Starting server on port {port}")
+    print(f"🚀 Starting Railway server on port {port}")
+    print(f"🌐 Frontend URL: https://cute-lily-7bee8d.netlify.app")
     uvicorn.run(
         app, 
         host="0.0.0.0", 
