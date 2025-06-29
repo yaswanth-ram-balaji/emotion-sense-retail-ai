@@ -1,38 +1,46 @@
-
-// Utility for backend API communication
+// Updated backend API with production support
+import { config, findWorkingBackendUrl, testBackendConnection } from '@/config/environment';
 
 export function getBackendUrl(backendStatus: string) {
-  // Pick the correct backend address
-  return backendStatus === "connected"
-    ? "http://localhost:8000"
-    : "http://127.0.0.1:8000";
+  return config.getBackendUrl();
 }
 
 export async function checkBackendConnection(
   setBackendStatus: (s: "connected" | "disconnected" | "checking") => void
 ) {
+  setBackendStatus("checking");
+  
   try {
-    const response = await fetch("http://localhost:8000/docs", {
-      method: "GET",
-      mode: "cors",
-    });
-    if (response.ok) {
+    // In production, use configured URL
+    if (import.meta.env.PROD) {
+      const backendUrl = config.getBackendUrl();
+      const isConnected = await testBackendConnection(backendUrl);
+      
+      if (isConnected) {
+        setBackendStatus("connected");
+        return true;
+      } else {
+        setBackendStatus("disconnected");
+        return false;
+      }
+    }
+    
+    // Development mode - try multiple URLs
+    const workingUrl = await findWorkingBackendUrl();
+    const isConnected = await testBackendConnection(workingUrl);
+    
+    if (isConnected) {
       setBackendStatus("connected");
       return true;
+    } else {
+      setBackendStatus("disconnected");
+      return false;
     }
-  } catch {}
-  try {
-    const response = await fetch("http://127.0.0.1:8000/docs", {
-      method: "GET",
-      mode: "cors",
-    });
-    if (response.ok) {
-      setBackendStatus("connected");
-      return true;
-    }
-  } catch {}
-  setBackendStatus("disconnected");
-  return false;
+  } catch (error) {
+    console.error('Backend connection check failed:', error);
+    setBackendStatus("disconnected");
+    return false;
+  }
 }
 
 export async function loadEmotionHistory(
@@ -41,8 +49,9 @@ export async function loadEmotionHistory(
 ) {
   try {
     if (backendStatus === "connected") {
+      const backendUrl = config.getBackendUrl();
       const response = await fetch(
-        `${getBackendUrl(backendStatus)}/emotion-log`,
+        `${backendUrl}${config.endpoints.emotionLog}`,
         {
           method: "GET",
           mode: "cors",
@@ -58,6 +67,6 @@ export async function loadEmotionHistory(
       }
     }
   } catch (error) {
-    // ignore for now
+    console.warn('Failed to load emotion history:', error);
   }
 }
