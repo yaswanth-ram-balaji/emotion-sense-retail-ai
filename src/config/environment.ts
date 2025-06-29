@@ -4,9 +4,9 @@ export const config = {
   getBackendUrl: (): string => {
     // Check if we're in production (deployed)
     if (import.meta.env.PROD) {
-      // TODO: Replace with your deployed backend URL after deployment
-      // Example: return 'https://your-app-name.railway.app';
-      return import.meta.env.VITE_BACKEND_URL || 'https://your-backend-url-here.railway.app';
+      // TODO: Replace with your Railway URL after deployment
+      // Example: return 'https://emotion-detection-backend-production.railway.app';
+      return import.meta.env.VITE_BACKEND_URL || 'https://emotion-detection-backend-production.railway.app';
     }
     
     // Development mode - try localhost first, then fallback
@@ -17,7 +17,7 @@ export const config = {
   getBackendUrls: (): string[] => {
     if (import.meta.env.PROD) {
       return [
-        import.meta.env.VITE_BACKEND_URL || 'https://your-backend-url-here.railway.app'
+        import.meta.env.VITE_BACKEND_URL || 'https://emotion-detection-backend-production.railway.app'
       ];
     }
     
